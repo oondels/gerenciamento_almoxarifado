@@ -1,0 +1,25 @@
+{
+  "name": "gerenciamento_almoxarifado",
+  "version": "1.0.0",
+  "description": "",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "DEV_ENV=development nodemon --watch './**/*.ts' --exec ts-node ./src/index.ts"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/pg": "^8.16.0",
+    "nodemon": "^3.1.11"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "ts-node": "^10.9.2",
+    "typeorm": "^0.3.28",
+    "typescript": "^5.9.3"
+  }
+}
