@@ -110,4 +110,66 @@ export class MovimentationService {
       order: { created_at: 'DESC' }
     });
   }
+
+  async getDashboardStats(limit: number = 10) {
+    try {
+      // Contagem total de movimentações
+      const totalMovimentations = await this.movimentationRepository.count();
+
+      // Movimentações de entrada (inbound)
+      const inboundMovimentations = await this.movimentationRepository.count({
+        where: { type: 'inbound' }
+      });
+
+      // Movimentações de saída (outbound)
+      const outboundMovimentations = await this.movimentationRepository.count({
+        where: { type: 'outbound' }
+      });
+
+      // Movimentações de ajuste (adjustment)
+      const adjustmentMovimentations = await this.movimentationRepository.count({
+        where: { type: 'adjustment' }
+      });
+
+      // Movimentações de transferência (transfer)
+      const transferMovimentations = await this.movimentationRepository.count({
+        where: { type: 'transfer' }
+      });
+
+      // Últimas movimentações
+      const recentMovimentations = await this.movimentationRepository.find({
+        relations: ['product'],
+        order: { created_at: 'DESC' },
+        take: limit
+      });
+
+      // Estatísticas por tipo
+      const statsByType = await this.movimentationRepository
+        .createQueryBuilder('movimentation')
+        .select('movimentation.type', 'type')
+        .addSelect('COUNT(movimentation.id)', 'count')
+        .addSelect('COALESCE(SUM(movimentation.quantity), 0)', 'totalQuantity')
+        .groupBy('movimentation.type')
+        .orderBy('count', 'DESC')
+        .getRawMany();
+
+      return {
+        totalMovimentations,
+        movimentationsByType: {
+          inbound: inboundMovimentations,
+          outbound: outboundMovimentations,
+          adjustment: adjustmentMovimentations,
+          transfer: transferMovimentations,
+        },
+        statsByType: statsByType.map(stat => ({
+          type: stat.type,
+          count: parseInt(stat.count),
+          totalQuantity: parseInt(stat.totalQuantity),
+        })),
+        recentMovimentations,
+      };
+    } catch (error) {
+      throw new Error(`Error fetching movimentation dashboard stats: ${error}`);
+    }
+  }
 }

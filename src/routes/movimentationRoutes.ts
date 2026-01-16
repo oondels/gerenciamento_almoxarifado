@@ -14,6 +14,7 @@ const productRepository = AppDataSource.getRepository(Product);
 const movimentationService = new MovimentationService(movimentationRepository, productRepository);
 const movimentationController = new MovimentationController(movimentationService);
 
+router.get('/stats/dashboard', (req, res) => movimentationController.dashboard(req, res));
 router.post('/', validateRequest(createMovimentationSchema, 'body'), (req, res) => movimentationController.create(req, res));
 router.get('/', (req, res) => movimentationController.getAll(req, res));
 router.get('/:id', (req, res) => movimentationController.getById(req, res));

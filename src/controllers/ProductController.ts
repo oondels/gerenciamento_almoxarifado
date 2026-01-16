@@ -158,11 +158,53 @@ export class ProductController {
         codigo: req.query.codigo as string | undefined,
         serial_number: req.query.serial_number as string | undefined,
         local_storage: req.query.local_storage as string | undefined,
+        year: req.query.year ? parseInt(req.query.year as string) : undefined,
+        month: req.query.month ? parseInt(req.query.month as string) : undefined,
+        start_date: req.query.start_date ? new Date(req.query.start_date as string) : undefined,
+        end_date: req.query.end_date ? new Date(req.query.end_date as string) : undefined,
       };
+
+      // Validação de mês
+      if (filters.month !== undefined && (filters.month < 1 || filters.month > 12)) {
+        return res.status(400).json({
+          success: false,
+          message: 'O mês deve estar entre 1 e 12',
+        });
+      }
+
+      // Validação de ano
+      if (filters.year !== undefined && filters.year < 1900) {
+        return res.status(400).json({
+          success: false,
+          message: 'Ano inválido',
+        });
+      }
+
+      // Validação de datas
+      if (filters.start_date && isNaN(filters.start_date.getTime())) {
+        return res.status(400).json({
+          success: false,
+          message: 'Data de início inválida',
+        });
+      }
+
+      if (filters.end_date && isNaN(filters.end_date.getTime())) {
+        return res.status(400).json({
+          success: false,
+          message: 'Data de fim inválida',
+        });
+      }
+
+      if (filters.start_date && filters.end_date && filters.start_date > filters.end_date) {
+        return res.status(400).json({
+          success: false,
+          message: 'A data de início deve ser anterior à data de fim',
+        });
+      }
 
       // Remove valores indefinidos dos filtros
       const activeFilters = Object.fromEntries(
-        Object.entries(filters).filter(([_, value]) => value !== undefined)
+        Object.entries(filters).filter(([_, value]) => value !== undefined && !isNaN(value as any))
       );
 
       const stats = await this.productService.getDashboardStats(

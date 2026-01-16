@@ -8,6 +8,10 @@ interface ProductFilters {
   codigo?: string;
   serial_number?: string;
   local_storage?: string;
+  year?: number;
+  month?: number;
+  start_date?: Date;
+  end_date?: Date;
 }
 
 export class ProductService {
@@ -154,6 +158,31 @@ export class ProductService {
   async getDashboardStats(filters?: ProductFilters) {
     try {
       const queryBuilder = this.productRepository.createQueryBuilder('product');
+
+      // Aplicar filtros de data
+      if (filters?.year) {
+        queryBuilder.andWhere('EXTRACT(YEAR FROM product.created_at) = :year', {
+          year: filters.year,
+        });
+      }
+
+      if (filters?.month) {
+        queryBuilder.andWhere('EXTRACT(MONTH FROM product.created_at) = :month', {
+          month: filters.month,
+        });
+      }
+
+      if (filters?.start_date) {
+        queryBuilder.andWhere('product.created_at >= :start_date', {
+          start_date: filters.start_date,
+        });
+      }
+
+      if (filters?.end_date) {
+        queryBuilder.andWhere('product.created_at <= :end_date', {
+          end_date: filters.end_date,
+        });
+      }
 
       // Aplicar filtros
       if (filters?.category) {

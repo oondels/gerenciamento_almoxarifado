@@ -141,4 +141,32 @@ export class MovimentationController {
       });
     }
   };
+
+  dashboard = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+
+      if (isNaN(limit) || limit <= 0) {
+        res.status(400).json({
+          success: false,
+          message: 'O limite deve ser um número positivo'
+        });
+        return;
+      }
+
+      const stats = await this.movimentationService.getDashboardStats(limit);
+
+      res.status(200).json({
+        success: true,
+        message: 'Estatísticas do dashboard retornadas com sucesso',
+        data: stats
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: 'Erro ao buscar estatísticas do dashboard',
+        error: error instanceof Error ? error.message : 'Erro desconhecido'
+      });
+    }
+  };
 }
