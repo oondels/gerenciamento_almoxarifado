@@ -7,11 +7,27 @@ export class ProductController {
 
   async list(req: Request, res: Response): Promise<Response> {
     try {
-      const products = await this.productService.findAll();
+      const filters = {
+        category: req.query.category as string | undefined,
+        stock_status: req.query.stock_status as 'in_stock' | 'out_stock' | 'low_stock' | undefined,
+        codigo: req.query.codigo as string | undefined,
+        serial_number: req.query.serial_number as string | undefined,
+        local_storage: req.query.local_storage as string | undefined,
+      };
+
+      // Remove valores indefinidos dos filtros
+      const activeFilters = Object.fromEntries(
+        Object.entries(filters).filter(([_, value]) => value !== undefined)
+      );
+
+      
+      const products = await this.productService.findAll(Object.keys(activeFilters).length > 0 ? activeFilters : undefined);
+      
       return res.status(200).json({
         success: true,
         data: products,
         count: products.length,
+        filters: Object.keys(activeFilters).length > 0 ? activeFilters : null,
       });
     } catch (error) {
       return res.status(500).json({

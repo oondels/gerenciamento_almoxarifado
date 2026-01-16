@@ -5,6 +5,7 @@ import { AppDataSource } from '../config/database';
 import { Product } from '../models/Product';
 import { validateRequest } from '../middlewares/validate.middleware';
 import { createProductSchema, updateProductSchema } from '../dtos/product.dto';
+import { productQuerySchema } from '../dtos/productQuery.dto';
 
 const router = Router();
 

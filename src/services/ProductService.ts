@@ -2,16 +2,67 @@ import { Repository } from 'typeorm';
 import { Product } from '../models/Product';
 import { CreateProductDTO, UpdateProductDTO } from '../types/ProductDTO';
 
+interface ProductFilters {
+  category?: string;
+  stock_status?: 'in_stock' | 'out_stock' | 'low_stock';
+  codigo?: string;
+  serial_number?: string;
+  local_storage?: string;
+}
+
 export class ProductService {
   constructor(private productRepository: Repository<Product>) {}
 
-  async findAll(): Promise<Product[]> {
+  async findAll(filters?: ProductFilters): Promise<Product[]> {
     try {
-      return await this.productRepository.find({
-        order: {
-          created_at: 'DESC',
-        },
-      });
+      const queryBuilder = this.productRepository.createQueryBuilder('product');
+
+      // Filtro por categoria
+      if (filters?.category) {
+        queryBuilder.andWhere('LOWER(product.category) LIKE LOWER(:category)', {
+          category: `%${filters.category}%`,
+        });
+      }
+
+      // Filtro por status de estoque
+      if (filters?.stock_status) {
+        switch (filters.stock_status) {
+          case 'in_stock':
+            queryBuilder.andWhere('product.quantity > 0');
+            break;
+          case 'out_stock':
+            queryBuilder.andWhere('product.quantity = 0');
+            break;
+          case 'low_stock':
+            queryBuilder.andWhere('product.quantity > 0 AND product.quantity <= product.minimal_quantity');
+            break;
+        }
+      }
+
+      // Filtro por código
+      if (filters?.codigo) {
+        queryBuilder.andWhere('LOWER(product.codigo) LIKE LOWER(:codigo)', {
+          codigo: `%${filters.codigo}%`,
+        });
+      }
+
+      // Filtro por número de série
+      if (filters?.serial_number) {
+        queryBuilder.andWhere('LOWER(product.serial_number) LIKE LOWER(:serial_number)', {
+          serial_number: `%${filters.serial_number}%`,
+        });
+      }
+
+      // Filtro por local de armazenamento
+      if (filters?.local_storage) {
+        queryBuilder.andWhere('LOWER(product.local_storage) LIKE LOWER(:local_storage)', {
+          local_storage: `%${filters.local_storage}%`,
+        });
+      }
+
+      queryBuilder.orderBy('product.created_at', 'DESC');
+
+      return await queryBuilder.getMany();
     } catch (error) {
       throw new Error(`Error fetching products: ${error}`);
     }

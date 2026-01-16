@@ -14,7 +14,7 @@ export const createMovimentationSchema = Joi.object({
       'any.required': 'O tipo de movimentação é obrigatório.'
     }),
 
-  productId: Joi.string()
+  product_id: Joi.string()
     .uuid()
     .required()
     .messages({
@@ -23,7 +23,7 @@ export const createMovimentationSchema = Joi.object({
       'any.required': 'O ID do produto é obrigatório.'
     }),
 
-  responsibleUserId: Joi.number()
+  movimented_by: Joi.number()
     .integer()
     .positive()
     .required()
@@ -45,7 +45,7 @@ export const createMovimentationSchema = Joi.object({
       'any.required': 'A quantidade é obrigatória.'
     }),
 
-  newLocation: Joi.string()
+  new_location: Joi.string()
     .max(255)
     .optional()
     .allow(null, '')
