@@ -2,9 +2,23 @@ import { Request, Response } from 'express';
 import { ProductService } from '../services/ProductService';
 import { CreateProductDTO, UpdateProductDTO } from '../types/ProductDTO';
 
+/**
+ * Controller responsável por gerenciar as requisições relacionadas a produtos.
+ * Implementa as operações CRUD e endpoints de consulta.
+ */
 export class ProductController {
   constructor(private productService: ProductService) {}
 
+  /**
+   * Lista todos os produtos cadastrados com suporte a filtros.
+   * 
+   * @param req - Request do Express contendo filtros opcionais em query params
+   * @param res - Response do Express
+   * @returns Promise com a lista de produtos e metadados
+   * 
+   * @example
+   * GET /api/products?category=Ferragens&stock_status=low_stock
+   */
   async list(req: Request, res: Response): Promise<Response> {
     try {
       const filters = {
@@ -38,6 +52,16 @@ export class ProductController {
     }
   }
 
+  /**
+   * Busca um produto específico por ID.
+   * 
+   * @param req - Request do Express contendo o ID do produto nos params
+   * @param res - Response do Express
+   * @returns Promise com os dados do produto encontrado
+   * 
+   * @example
+   * GET /api/products/:id
+   */
   async getById(req: Request, res: Response): Promise<Response> {
     try {
       const { id } = req.params;
@@ -53,6 +77,17 @@ export class ProductController {
       return res.status(200).json({
         success: true,
         data: product,
+  /**
+   * Cria um novo produto no sistema.
+   * 
+   * @param req - Request do Express contendo os dados do produto no body
+   * @param res - Response do Express
+   * @returns Promise com o produto criado
+   * 
+   * @example
+   * POST /api/products
+   * Body: { "name": "Parafuso", "category": "Ferragens", "quantity": 100 }
+   */
       });
     } catch (error) {
       const statusCode = error instanceof Error && error.message === 'Product not found' ? 404 : 500;
@@ -79,6 +114,17 @@ export class ProductController {
       return res.status(201).json({
         success: true,
         message: 'Product created successfully',
+  /**
+   * Atualiza um produto existente.
+   * 
+   * @param req - Request do Express contendo o ID nos params e dados atualizados no body
+   * @param res - Response do Express
+   * @returns Promise com o produto atualizado
+   * 
+   * @example
+   * PATCH /api/products/:id
+   * Body: { "quantity": 150, "value": 5.50 }
+   */
         data: product,
       });
     } catch (error) {
@@ -114,6 +160,16 @@ export class ProductController {
         success: true,
         message: 'Product updated successfully',
         data: product,
+  /**
+   * Remove um produto do sistema.
+   * 
+   * @param req - Request do Express contendo o ID do produto nos params
+   * @param res - Response do Express
+   * @returns Promise confirmando a exclusão
+   * 
+   * @example
+   * DELETE /api/products/:id
+   */
       });
     } catch (error) {
       const statusCode = error instanceof Error && error.message === 'Product not found' ? 404 :
@@ -129,6 +185,18 @@ export class ProductController {
     try {
       const { id } = req.params;
 
+  /**
+   * Retorna estatísticas e métricas do dashboard de produtos.
+   * Suporta filtros por categoria, status de estoque, localização e período.
+   * 
+   * @param req - Request do Express contendo filtros opcionais em query params
+   * @param res - Response do Express
+   * @returns Promise com estatísticas agregadas dos produtos
+   * 
+   * @example
+   * GET /api/products/stats/dashboard?year=2026&month=1
+   * GET /api/products/stats/dashboard?category=Ferragens&stock_status=low_stock
+   */
       if (!id) {
         return res.status(400).json({
           success: false,

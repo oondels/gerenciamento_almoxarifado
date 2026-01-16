@@ -93,12 +93,60 @@ src/
 └── index.ts        # Arquivo principal da aplicação
 ```
 
+Para uma documentação detalhada sobre a arquitetura do projeto, padrões de design utilizados, fluxo de dados e decisões arquiteturais, consulte [ARCHITECTURE.md](ARCHITECTURE.md).
+
 ## Documentação da API
+
+### Postman Collection
+
+Para facilitar o teste e uso da API, disponibilizamos uma collection completa do Postman com todos os endpoints documentados.
+
+**Como usar:**
+
+1. Abra o Postman
+2. Clique em "Import"
+3. Selecione o arquivo `postman_collection.json` na raiz do projeto
+4. A collection será importada com todas as requisições organizadas
+
+**Variáveis de ambiente:**
+- `base_url`: URL base da API (padrão: `http://localhost:9137`)
+- `product_id`: UUID de um produto para testes
+- `movimentation_id`: UUID de uma movimentação para testes
+
+A collection inclui:
+- ✅ Health Check
+- ✅ Todos os endpoints de Produtos (CRUD + Dashboard)
+- ✅ Todos os endpoints de Movimentações (CRUD + Dashboard + Tipos)
+- ✅ Exemplos de requisições para cada tipo de movimentação
+- ✅ Descrições detalhadas de cada endpoint
+- ✅ Query parameters documentados
 
 ### Produtos
 
 #### GET /api/products
 Lista todos os produtos cadastrados.
+
+**Query Parameters (todos opcionais):**
+- `category` (string) - Filtra produtos por categoria
+- `stock_status` (string) - Filtra por status do estoque: `in_stock`, `out_stock`, `low_stock`
+- `codigo` (string) - Filtra por código do produto
+- `serial_number` (string) - Filtra por número de série
+- `local_storage` (string) - Filtra por localização de armazenamento
+
+**Exemplos de uso:**
+```bash
+# Listar todos os produtos
+GET /api/products
+
+# Filtrar por categoria
+GET /api/products?category=Ferragens
+
+# Filtrar produtos com estoque baixo
+GET /api/products?stock_status=low_stock
+
+# Combinar múltiplos filtros
+GET /api/products?category=Ferragens&stock_status=in_stock
+```
 
 **Resposta de sucesso (200):**
 ```json
@@ -227,6 +275,147 @@ Atualiza um produto existente.
   "local_storage": "Prateleira B2",
   "created_at": "2026-01-16T10:00:00.000Z",
   "updated_at": "2026-01-16T10:15:00.000Z"
+}
+```
+
+#### GET /api/products/stats/dashboard
+Retorna estatísticas e métricas agregadas do dashboard de produtos com suporte a filtros.
+
+**Query Parameters (todos opcionais):**
+- `category` (string) - Filtra produtos por categoria
+- `stock_status` (string) - Filtra por status do estoque: `in_stock`, `out_stock`, `low_stock`
+- `codigo` (string) - Filtra por código do produto
+- `serial_number` (string) - Filtra por número de série
+- `local_storage` (string) - Filtra por localização
+- `year` (number) - Filtra produtos criados em um ano específico (>= 1900)
+- `month` (number) - Filtra produtos criados em um mês específico (1-12)
+- `start_date` (string ISO 8601) - Data de início do período (formato: YYYY-MM-DD)
+- `end_date` (string ISO 8601) - Data de fim do período (formato: YYYY-MM-DD)
+
+**Exemplos de uso:**
+```bash
+# Dashboard geral sem filtros
+GET /api/products/stats/dashboard
+
+# Filtrar por ano específico
+GET /api/products/stats/dashboard?year=2026
+
+# Filtrar por mês e ano
+GET /api/products/stats/dashboard?year=2026&month=1
+
+# Filtrar por período específico
+GET /api/products/stats/dashboard?start_date=2026-01-01&end_date=2026-12-31
+
+# Combinar filtros de data com filtros de produto
+GET /api/products/stats/dashboard?category=Ferragens&stock_status=low_stock&year=2026
+
+# Filtrar apenas a partir de uma data
+GET /api/products/stats/dashboard?start_date=2026-06-01
+
+# Filtrar até uma data específica
+GET /api/products/stats/dashboard?end_date=2026-12-31
+```
+
+**Validações:**
+- O mês deve estar entre 1 e 12
+- O ano deve ser >= 1900
+- As datas devem estar em formato válido
+- A data de início deve ser anterior à data de fim quando ambas são fornecidas
+
+**Resposta de sucesso (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "totalMaterials": 150,
+    "totalQuantity": 5430,
+    "totalStockValue": 125430.50,
+    "lowStockProducts": 12,
+    "outOfStockProducts": 5,
+    "statsByCategory": [
+      {
+        "category": "Ferragens",
+        "totalMaterials": 45,
+        "totalQuantity": 1250,
+        "totalValue": 25430.50
+      },
+      {
+        "category": "Eletrônicos",
+        "totalMaterials": 30,
+        "totalQuantity": 800,
+        "totalValue": 85000.00
+      }
+    ],
+    "statsByLocation": [
+      {
+        "location": "Prateleira A1",
+        "totalMaterials": 25,
+        "totalQuantity": 600,
+        "totalValue": 15000.00
+      },
+      {
+        "location": "Prateleira B2",
+        "totalMaterials": 30,
+        "totalQuantity": 850,
+        "totalValue": 22500.00
+      },
+      {
+        "location": "Sem localização",
+        "totalMaterials": 10,
+        "totalQuantity": 150,
+        "totalValue": 3500.00
+      }
+    ]
+  },
+  "filters": {
+    "year": 2026,
+    "category": "Ferragens"
+  }
+}
+```
+
+**Descrição dos campos da resposta:**
+- `totalMaterials`: Total de produtos cadastrados (contagem de registros)
+- `totalQuantity`: Soma de todas as quantidades em estoque
+- `totalStockValue`: Valor total do estoque (quantidade × valor unitário)
+- `lowStockProducts`: Produtos com estoque abaixo da quantidade mínima
+- `outOfStockProducts`: Produtos com estoque zerado
+- `statsByCategory`: Estatísticas agrupadas por categoria
+- `statsByLocation`: Estatísticas agrupadas por localização
+
+**Respostas de erro (400):**
+```json
+{
+  "success": false,
+  "message": "O mês deve estar entre 1 e 12"
+}
+```
+
+```json
+{
+  "success": false,
+  "message": "Ano inválido"
+}
+```
+
+```json
+{
+  "success": false,
+  "message": "Data de início inválida"
+}
+```
+
+```json
+{
+  "success": false,
+  "message": "Data de fim inválida"
+}
+```
+
+```json
+{
+  "success": false,
+  "message": "A data de início deve ser anterior à data de fim"
 }
 ```
 
@@ -519,46 +708,202 @@ Registra uma nova movimentação de produto.
 }
 ```
 
-## Tratamento de Erros
+## Deployment para Produção
 
-A API retorna erros no seguinte formato:
+Esta seção descreve como preparar e fazer o deploy da aplicação em ambiente de produção.
 
-**Erro de validação (400):**
-```json
-{
-  "message": "Erro na validação dos dados.",
-  "details": [
-    {
-      "path": "name",
-      "message": "O nome do produto é obrigatório."
-    }
-  ]
-}
+### Pré-requisitos de Produção
+
+- Servidor com Node.js 14+ instalado
+- PostgreSQL 12+ em execução
+- PM2 ou similar para gerenciamento de processos
+- Nginx (opcional, para reverse proxy)
+- Certificado SSL (recomendado)
+
+### Preparação para Deploy
+
+#### 1. Configuração do Ambiente de Produção
+
+Crie um arquivo `.env.prod` na raiz do projeto com as configurações de produção:
+
+```env
+NODE_ENV=production
+PORT=9137
+
+# Database - Use credenciais seguras
+DB_HOST=seu-servidor-postgres.com
+DB_PORT=5432
+DB_USER=usuario_producao
+DB_PASSWORD=senha_forte_e_segura
+DB_NAME=almoxarifado_prod
+
+# APIs externas
+NOTIFICATION_API=https://api.notificacoes.com
+NOTIFICATION_API_KEY=sua_chave_api_producao
+FRONTEND_URL=https://seu-dominio.com
 ```
 
-**Erro não encontrado (404):**
-```json
-{
-  "message": "Produto não encontrado"
-}
+#### 2. Build da Aplicação
+
+Compile o código TypeScript para JavaScript:
+
+```bash
+npm run build
 ```
 
-**Erro interno do servidor (500):**
-```json
-{
-  "message": "Erro ao processar requisição",
-  "error": "Descrição do erro"
-}
+#### 3. Preparar o Banco de Dados
+
+Execute as migrations no banco de produção:
+
+```bash
+NODE_ENV=production npm run migration:run
 ```
 
-## Contribuindo
+### Métodos de Deploy
 
-1. Faça um fork do projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/nova-feature`)
-3. Commit suas mudanças (`git commit -m 'Adiciona nova feature'`)
-4. Push para a branch (`git push origin feature/nova-feature`)
-5. Abra um Pull Request
+#### Opção 1: Deploy Manual com PM2 (Recomendado)
 
-## Licença
+**Instalar PM2 globalmente:**
+```bash
+npm install -g pm2
+```
 
-ISC
+**Criar arquivo de configuração do PM2 (`ecosystem.config.js`):**
+```javascript
+module.exports = {
+  apps: [{
+    name: 'almoxarifado-api',
+    script: './dist/index.js',
+    instances: 2,
+    exec_mode: 'cluster',
+    env_production: {
+      NODE_ENV: 'production',
+      PORT: 9137
+    },
+    error_file: './logs/err.log',
+    out_file: './logs/out.log',
+    log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+    merge_logs: true,
+    autorestart: true,
+    watch: false,
+    max_memory_restart: '1G'
+  }]
+};
+```
+
+**Iniciar a aplicação:**
+```bash
+pm2 start ecosystem.config.js --env production
+pm2 save
+pm2 startup
+```
+
+#### Opção 2: Deploy com Docker
+
+**Criar `Dockerfile`:**
+```dockerfile
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copiar package files
+COPY package*.json ./
+
+# Instalar dependências
+RUN npm ci --only=production
+
+# Copiar código compilado
+COPY dist/ ./dist/
+COPY src/migrations/ ./dist/migrations/
+
+# Expor porta
+EXPOSE 9137
+
+# Comando de inicialização
+CMD ["node", "dist/index.js"]
+```
+
+**Criar `docker-compose.yml`:**
+```yaml
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: almoxarifado
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    ports:
+      - "9137:9137"
+    environment:
+      NODE_ENV: production
+      PORT: 9137
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: almoxarifado
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+```
+
+**Build e iniciar com Docker:**
+```bash
+# Build
+npm run build
+docker-compose build
+
+# Iniciar
+docker-compose up -d
+
+# Ver logs
+docker-compose logs -f api
+
+# Parar
+docker-compose down
+```
+
+#### Opção 3: Deploy em Cloud Providers
+
+**Heroku:**
+```bash
+# Instalar Heroku CLI
+npm install -g heroku
+
+# Login
+heroku login
+
+# Criar app
+heroku create seu-app-almoxarifado
+
+# Adicionar PostgreSQL
+heroku addons:create heroku-postgresql:mini
+
+# Configurar variáveis de ambiente
+heroku config:set NODE_ENV=production
+heroku config:set PORT=9137
+
+# Deploy
+git push heroku main
+
+# Executar migrations
+heroku run npm run migration:run
+```

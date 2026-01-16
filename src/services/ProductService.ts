@@ -14,9 +14,20 @@ interface ProductFilters {
   end_date?: Date;
 }
 
+/**
+ * Service responsável pela lógica de negócio relacionada a produtos.
+ * Implementa operações CRUD, filtros e estatísticas.
+ */
 export class ProductService {
   constructor(private productRepository: Repository<Product>) {}
 
+  /**
+   * Busca todos os produtos com suporte a diversos filtros.
+   * 
+   * @param filters - Objeto contendo filtros opcionais (categoria, status de estoque, código, etc.)
+   * @returns Promise com array de produtos encontrados
+   * @throws Error se houver problema na consulta ao banco de dados
+   */
   async findAll(filters?: ProductFilters): Promise<Product[]> {
     try {
       const queryBuilder = this.productRepository.createQueryBuilder('product');
@@ -72,6 +83,13 @@ export class ProductService {
     }
   }
 
+  /**
+   * Busca um produto específico por ID.
+   * 
+   * @param id - UUID do produto
+   * @returns Promise com o produto encontrado
+   * @throws Error se o produto não for encontrado
+   */
   async findById(id: string): Promise<Product> {
     try {
       const product = await this.productRepository.findOne({
@@ -81,7 +99,15 @@ export class ProductService {
       if (!product) {
         throw new Error('Product not found');
       }
-
+/**
+   * Cria um novo produto no sistema.
+   * Valida a quantidade mínima e verifica duplicação de código.
+   * 
+   * @param data - Dados do produto a ser criado
+   * @returns Promise com o produto criado
+   * @throws Error se a quantidade mínima for negativa ou código já existir
+   */
+  
       return product;
     } catch (error) {
       throw error;
@@ -110,6 +136,15 @@ export class ProductService {
         ...data,
         minimal_quantity: data.minimal_quantity ?? 0,
         quantity: data.quantity ?? 0,
+  /**
+   * Atualiza um produto existente.
+   * Valida a quantidade mínima e verifica duplicação de código.
+   * 
+   * @param id - UUID do produto a ser atualizado
+   * @param data - Dados a serem atualizados
+   * @returns Promise com o produto atualizado
+   * @throws Error se o produto não existir, quantidade mínima for negativa ou código já existir
+   */
       });
 
       return await this.productRepository.save(product);
@@ -129,6 +164,13 @@ export class ProductService {
 
       // Check if new codigo already exists
       if (data.codigo && data.codigo !== product.codigo) {
+  /**
+   * Remove um produto do sistema.
+   * 
+   * @param id - UUID do produto a ser removido
+   * @returns Promise void
+   * @throws Error se o produto não for encontrado
+   */
         const existingProduct = await this.productRepository.findOne({
           where: { codigo: data.codigo },
         });
@@ -139,7 +181,15 @@ export class ProductService {
       }
 
       Object.assign(product, data);
-
+/**
+   * Retorna estatísticas agregadas do dashboard de produtos.
+   * Calcula totais de materiais, quantidades, valores e agrupa por categoria e localização.
+   * 
+   * @param filters - Filtros opcionais para refinar as estatísticas
+   * @returns Promise com objeto contendo todas as estatísticas
+   * @throws Error se houver problema na consulta ao banco de dados
+   */
+  
       return await this.productRepository.save(product);
     } catch (error) {
       throw error;

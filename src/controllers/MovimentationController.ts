@@ -2,9 +2,25 @@ import { Request, Response } from 'express';
 import { MovimentationService } from '../services/MovimentationService';
 import { CreateMovimentationDTO } from '../types/MovimentationDTO';
 
+/**
+ * Controller responsável por gerenciar as requisições relacionadas a movimentações de estoque.
+ * Implementa operações de criação, consulta e estatísticas de movimentações.
+ */
 export class MovimentationController {
   constructor(private movimentationService: MovimentationService) {}
 
+  /**
+   * Cria uma nova movimentação de estoque.
+   * Atualiza automaticamente a quantidade do produto conforme o tipo de movimentação.
+   * 
+   * @param req - Request do Express contendo os dados da movimentação no body
+   * @param res - Response do Express
+   * @returns Promise com a movimentação criada
+   * 
+   * @example
+   * POST /api/movimentations
+   * Body: { "type": "inbound", "product_id": "uuid", "quantity": 50, "movimented_by": 123 }
+   */
   create = async (req: Request, res: Response): Promise<void> => {
     try {
       const data: CreateMovimentationDTO = req.body;
@@ -76,6 +92,16 @@ export class MovimentationController {
     }
   };
 
+  /**
+   * Lista todas as movimentações cadastradas no sistema.
+   * 
+   * @param req - Request do Express
+   * @param res - Response do Express
+   * @returns Promise com a lista de todas as movimentações
+   * 
+   * @example
+   * GET /api/movimentations
+   */
   getAll = async (req: Request, res: Response): Promise<void> => {
     try {
       const movimentations = await this.movimentationService.findAll();
@@ -94,6 +120,16 @@ export class MovimentationController {
     }
   };
 
+  /**
+   * Busca uma movimentação específica por ID.
+   * 
+   * @param req - Request do Express contendo o ID da movimentação nos params
+   * @param res - Response do Express
+   * @returns Promise com os dados da movimentação encontrada
+   * 
+   * @example
+   * GET /api/movimentations/:id
+   */
   getById = async (req: Request, res: Response): Promise<void> => {
     try {
       const { id } = req.params;
@@ -112,6 +148,16 @@ export class MovimentationController {
           message: error.message
         });
         return;
+  /**
+   * Lista todas as movimentações de um produto específico.
+   * 
+   * @param req - Request do Express contendo o ID do produto nos params
+   * @param res - Response do Express
+   * @returns Promise com o histórico de movimentações do produto
+   * 
+   * @example
+   * GET /api/movimentations/product/:productId
+   */
       }
 
       res.status(500).json({
@@ -132,6 +178,18 @@ export class MovimentationController {
         success: true,
         message: 'Movimentations retrieved successfully',
         data: movimentations
+  /**
+   * Retorna estatísticas e métricas do dashboard de movimentações.
+   * Suporta filtros por período (ano, mês, data início/fim) e limitação de resultados.
+   * 
+   * @param req - Request do Express contendo filtros opcionais em query params
+   * @param res - Response do Express
+   * @returns Promise com estatísticas agregadas das movimentações
+   * 
+   * @example
+   * GET /api/movimentations/stats/dashboard?year=2026&month=1&limit=20
+   * GET /api/movimentations/stats/dashboard?start_date=2026-01-01&end_date=2026-12-31
+   */
       });
     } catch (error) {
       res.status(500).json({

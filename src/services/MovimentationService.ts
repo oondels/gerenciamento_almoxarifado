@@ -3,12 +3,24 @@ import { Movimentation } from '../models/Movimentation';
 import { Product } from '../models/Product';
 import { CreateMovimentationDTO } from '../types/MovimentationDTO';
 
+/**
+ * Service responsável pela lógica de negócio relacionada a movimentações de estoque.
+ * Gerencia entrada, saída, transferência e ajustes de produtos.
+ */
 export class MovimentationService {
   constructor(
     private movimentationRepository: Repository<Movimentation>,
     private productRepository: Repository<Product>
   ) {}
 
+  /**
+   * Cria uma nova movimentação e atualiza automaticamente o estoque do produto.
+   * Suporta 4 tipos de movimentações: inbound, outbound, transfer e adjustment.
+   * 
+   * @param data - Dados da movimentação a ser criada
+   * @returns Promise com a movimentação criada incluindo relação com produto
+   * @throws Error se o tipo for inválido, produto não existir ou estoque insuficiente
+   */
   async create(data: CreateMovimentationDTO): Promise<Movimentation> {
     // Validate type
     const validTypes = ['inbound', 'outbound', 'transfer', 'adjustment'];
@@ -83,6 +95,11 @@ export class MovimentationService {
     }) as Promise<Movimentation>;
   }
 
+  /**
+   * Busca todas as movimentações cadastradas ordenadas por data de criação.
+   * 
+   * @returns Promise com array de movimentações incluindo relação com produto
+   */
   async findAll(): Promise<Movimentation[]> {
     return this.movimentationRepository.find({
       relations: ['product'],
@@ -90,12 +107,25 @@ export class MovimentationService {
     });
   }
 
+  /**
+   * Busca uma movimentação específica por ID.
+   * 
+   * @param id - UUID da movimentação
+   * @returns Promise com a movimentação encontrada incluindo relação com produto
+   * @throws Error se a movimentação não for encontrada
+   */
   async findById(id: string): Promise<Movimentation> {
     const movimentation = await this.movimentationRepository.findOne({
       where: { id },
       relations: ['product']
     });
 
+  /**
+   * Busca todas as movimentações de um produto específico.
+   * 
+   * @param productId - UUID do produto
+   * @returns Promise com array de movimentações do produto ordenadas por data
+   */
     if (!movimentation) {
       throw new Error('Movimentation not found');
     }
@@ -105,6 +135,15 @@ export class MovimentationService {
 
   async findByProduct(productId: string): Promise<Movimentation[]> {
     return this.movimentationRepository.find({
+  /**
+   * Retorna estatísticas agregadas do dashboard de movimentações.
+   * Calcula totais por tipo, movimentações recentes e estatísticas detalhadas.
+   * 
+   * @param limit - Número máximo de movimentações recentes a retornar (padrão: 10)
+   * @param filters - Filtros opcionais por período (ano, mês, datas)
+   * @returns Promise com objeto contendo todas as estatísticas
+   * @throws Error se houver problema na consulta ao banco de dados
+   */
       where: { product_id: productId },
       relations: ['product'],
       order: { created_at: 'DESC' }
