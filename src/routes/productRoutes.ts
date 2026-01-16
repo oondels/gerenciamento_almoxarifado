@@ -13,6 +13,7 @@ const productRepository = AppDataSource.getRepository(Product);
 const productService = new ProductService(productRepository);
 const productController = new ProductController(productService);
 
+router.get('/stats/dashboard', (req, res) => productController.dashboard(req, res));
 router.get('/', (req, res) => productController.list(req, res));
 router.get('/:id', (req, res) => productController.getById(req, res));
 router.post('/', validateRequest(createProductSchema, 'body'), (req, res) => productController.create(req, res));
