@@ -111,47 +111,82 @@ export class MovimentationService {
     });
   }
 
-  async getDashboardStats(limit: number = 10) {
+  async getDashboardStats(limit: number = 10, filters?: {
+    year?: number;
+    month?: number;
+    start_date?: Date;
+    end_date?: Date;
+  }) {
     try {
+      // Build base query with date filters
+      const buildWhereClause = (qb: any) => {
+        if (filters) {
+          if (filters.year !== undefined) {
+            qb.andWhere('EXTRACT(YEAR FROM movimentation.created_at) = :year', { year: filters.year });
+          }
+          if (filters.month !== undefined) {
+            qb.andWhere('EXTRACT(MONTH FROM movimentation.created_at) = :month', { month: filters.month });
+          }
+          if (filters.start_date && filters.end_date) {
+            qb.andWhere('movimentation.created_at BETWEEN :start_date AND :end_date', {
+              start_date: filters.start_date,
+              end_date: filters.end_date
+            });
+          } else if (filters.start_date) {
+            qb.andWhere('movimentation.created_at >= :start_date', { start_date: filters.start_date });
+          } else if (filters.end_date) {
+            qb.andWhere('movimentation.created_at <= :end_date', { end_date: filters.end_date });
+          }
+        }
+      };
+
       // Contagem total de movimentações
-      const totalMovimentations = await this.movimentationRepository.count();
+      const totalQuery = this.movimentationRepository.createQueryBuilder('movimentation');
+      buildWhereClause(totalQuery);
+      const totalMovimentations = await totalQuery.getCount();
 
       // Movimentações de entrada (inbound)
-      const inboundMovimentations = await this.movimentationRepository.count({
-        where: { type: 'inbound' }
-      });
+      const inboundQuery = this.movimentationRepository.createQueryBuilder('movimentation')
+        .where('movimentation.type = :type', { type: 'inbound' });
+      buildWhereClause(inboundQuery);
+      const inboundMovimentations = await inboundQuery.getCount();
 
       // Movimentações de saída (outbound)
-      const outboundMovimentations = await this.movimentationRepository.count({
-        where: { type: 'outbound' }
-      });
+      const outboundQuery = this.movimentationRepository.createQueryBuilder('movimentation')
+        .where('movimentation.type = :type', { type: 'outbound' });
+      buildWhereClause(outboundQuery);
+      const outboundMovimentations = await outboundQuery.getCount();
 
       // Movimentações de ajuste (adjustment)
-      const adjustmentMovimentations = await this.movimentationRepository.count({
-        where: { type: 'adjustment' }
-      });
+      const adjustmentQuery = this.movimentationRepository.createQueryBuilder('movimentation')
+        .where('movimentation.type = :type', { type: 'adjustment' });
+      buildWhereClause(adjustmentQuery);
+      const adjustmentMovimentations = await adjustmentQuery.getCount();
 
       // Movimentações de transferência (transfer)
-      const transferMovimentations = await this.movimentationRepository.count({
-        where: { type: 'transfer' }
-      });
+      const transferQuery = this.movimentationRepository.createQueryBuilder('movimentation')
+        .where('movimentation.type = :type', { type: 'transfer' });
+      buildWhereClause(transferQuery);
+      const transferMovimentations = await transferQuery.getCount();
 
       // Últimas movimentações
-      const recentMovimentations = await this.movimentationRepository.find({
-        relations: ['product'],
-        order: { created_at: 'DESC' },
-        take: limit
-      });
+      const recentQuery = this.movimentationRepository.createQueryBuilder('movimentation')
+        .leftJoinAndSelect('movimentation.product', 'product')
+        .orderBy('movimentation.created_at', 'DESC')
+        .take(limit);
+      buildWhereClause(recentQuery);
+      const recentMovimentations = await recentQuery.getMany();
 
       // Estatísticas por tipo
-      const statsByType = await this.movimentationRepository
+      const statsByTypeQuery = this.movimentationRepository
         .createQueryBuilder('movimentation')
         .select('movimentation.type', 'type')
         .addSelect('COUNT(movimentation.id)', 'count')
         .addSelect('COALESCE(SUM(movimentation.quantity), 0)', 'totalQuantity')
         .groupBy('movimentation.type')
-        .orderBy('count', 'DESC')
-        .getRawMany();
+        .orderBy('count', 'DESC');
+      buildWhereClause(statsByTypeQuery);
+      const statsByType = await statsByTypeQuery.getRawMany();
 
       return {
         totalMovimentations,

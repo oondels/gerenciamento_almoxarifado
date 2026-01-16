@@ -154,12 +154,71 @@ export class MovimentationController {
         return;
       }
 
-      const stats = await this.movimentationService.getDashboardStats(limit);
+      const filters = {
+        year: req.query.year ? parseInt(req.query.year as string) : undefined,
+        month: req.query.month ? parseInt(req.query.month as string) : undefined,
+        start_date: req.query.start_date ? new Date(req.query.start_date as string) : undefined,
+        end_date: req.query.end_date ? new Date(req.query.end_date as string) : undefined,
+      };
+
+      // Validação de mês
+      if (filters.month !== undefined && (filters.month < 1 || filters.month > 12)) {
+        res.status(400).json({
+          success: false,
+          message: 'O mês deve estar entre 1 e 12'
+        });
+        return;
+      }
+
+      // Validação de ano
+      if (filters.year !== undefined && filters.year < 1900) {
+        res.status(400).json({
+          success: false,
+          message: 'Ano inválido'
+        });
+        return;
+      }
+
+      // Validação de datas
+      if (filters.start_date && isNaN(filters.start_date.getTime())) {
+        res.status(400).json({
+          success: false,
+          message: 'Data de início inválida'
+        });
+        return;
+      }
+
+      if (filters.end_date && isNaN(filters.end_date.getTime())) {
+        res.status(400).json({
+          success: false,
+          message: 'Data de fim inválida'
+        });
+        return;
+      }
+
+      if (filters.start_date && filters.end_date && filters.start_date > filters.end_date) {
+        res.status(400).json({
+          success: false,
+          message: 'A data de início deve ser anterior à data de fim'
+        });
+        return;
+      }
+
+      // Remove valores indefinidos dos filtros
+      const activeFilters = Object.fromEntries(
+        Object.entries(filters).filter(([_, value]) => value !== undefined && !isNaN(value as any))
+      );
+
+      const stats = await this.movimentationService.getDashboardStats(
+        limit,
+        Object.keys(activeFilters).length > 0 ? activeFilters : undefined
+      );
 
       res.status(200).json({
         success: true,
         message: 'Estatísticas do dashboard retornadas com sucesso',
-        data: stats
+        data: stats,
+        filters: Object.keys(activeFilters).length > 0 ? activeFilters : null,
       });
     } catch (error) {
       res.status(500).json({

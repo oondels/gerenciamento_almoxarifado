@@ -318,6 +318,155 @@ Lista todas as movimentações de um produto específico.
 ]
 ```
 
+#### GET /api/movimentations/dashboard
+Retorna estatísticas e métricas do dashboard de movimentações com suporte a filtros de data.
+
+**Query Parameters (todos opcionais):**
+- `limit` (number) - Limita a quantidade de movimentações recentes retornadas (padrão: 10)
+- `year` (number) - Filtra movimentações por ano (>= 1900)
+- `month` (number) - Filtra movimentações por mês (1-12)
+- `start_date` (string ISO 8601) - Data de início do período (formato: YYYY-MM-DD)
+- `end_date` (string ISO 8601) - Data de fim do período (formato: YYYY-MM-DD)
+
+**Exemplos de uso:**
+
+```bash
+# Dashboard geral sem filtros
+GET /api/movimentations/dashboard
+
+# Filtrar por ano específico
+GET /api/movimentations/dashboard?year=2025
+
+# Filtrar por mês e ano
+GET /api/movimentations/dashboard?year=2025&month=12
+
+# Filtrar por período específico
+GET /api/movimentations/dashboard?start_date=2025-01-01&end_date=2025-12-31
+
+# Combinar filtro de data com limite de resultados
+GET /api/movimentations/dashboard?year=2025&month=1&limit=20
+
+# Filtrar apenas a partir de uma data
+GET /api/movimentations/dashboard?start_date=2025-06-01
+
+# Filtrar até uma data específica
+GET /api/movimentations/dashboard?end_date=2025-12-31
+```
+
+**Validações:**
+- O mês deve estar entre 1 e 12
+- O ano deve ser >= 1900
+- As datas devem estar em formato válido
+- A data de início deve ser anterior à data de fim quando ambas são fornecidas
+- O limite deve ser um número positivo
+
+**Resposta de sucesso (200):**
+```json
+{
+  "success": true,
+  "message": "Estatísticas do dashboard retornadas com sucesso",
+  "data": {
+    "totalMovimentations": 150,
+    "movimentationsByType": {
+      "inbound": 60,
+      "outbound": 50,
+      "adjustment": 20,
+      "transfer": 20
+    },
+    "statsByType": [
+      {
+        "type": "inbound",
+        "count": 60,
+        "totalQuantity": 1200
+      },
+      {
+        "type": "outbound",
+        "count": 50,
+        "totalQuantity": 850
+      },
+      {
+        "type": "adjustment",
+        "count": 20,
+        "totalQuantity": 100
+      },
+      {
+        "type": "transfer",
+        "count": 20,
+        "totalQuantity": 300
+      }
+    ],
+    "recentMovimentations": [
+      {
+        "id": "uuid",
+        "type": "inbound",
+        "product_id": "uuid",
+        "movimented_by": 12345,
+        "quantity": 20,
+        "product_old_quantity": 50,
+        "product_new_quantity": 70,
+        "local_storage": "Prateleira A1",
+        "product_old_local_storage": "Prateleira A1",
+        "appointment": "Compra fornecedor XYZ",
+        "created_at": "2025-12-16T10:00:00.000Z",
+        "updated_at": "2025-12-16T10:00:00.000Z",
+        "product": {
+          "id": "uuid",
+          "name": "Parafuso M8",
+          "category": "Ferragens"
+        }
+      }
+    ]
+  },
+  "filters": {
+    "year": 2025,
+    "month": 12
+  }
+}
+```
+
+**Respostas de erro (400):**
+```json
+{
+  "success": false,
+  "message": "O mês deve estar entre 1 e 12"
+}
+```
+
+```json
+{
+  "success": false,
+  "message": "Ano inválido"
+}
+```
+
+```json
+{
+  "success": false,
+  "message": "Data de início inválida"
+}
+```
+
+```json
+{
+  "success": false,
+  "message": "Data de fim inválida"
+}
+```
+
+```json
+{
+  "success": false,
+  "message": "A data de início deve ser anterior à data de fim"
+}
+```
+
+```json
+{
+  "success": false,
+  "message": "O limite deve ser um número positivo"
+}
+```
+
 #### POST /api/movimentations
 Registra uma nova movimentação de produto.
 
