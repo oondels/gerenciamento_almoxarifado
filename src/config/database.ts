@@ -11,8 +11,8 @@ export const AppDataSource = new DataSource({
   password: config.database.password || 'postgres',
   database: config.database.name || 'almoxarifado',
   synchronize: false,
-  logging: false,
+  logging: true,
   entities: [Product, Movimentation],
-  migrations: [],
+  migrations: [config.env === 'development' ? "src/migrations/**/*.ts" : "src/migrations/**/*.js"],
   subscribers: [],
 });

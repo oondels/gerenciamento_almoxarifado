@@ -8,7 +8,12 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "NODE_ENV=development nodemon --watch './**/*.ts' --exec ts-node ./src/index.ts"
+    "dev": "NODE_ENV=development nodemon --watch './**/*.ts' --exec ts-node ./src/index.ts",
+    "build": "tsc",
+    "typeorm": "typeorm-ts-node-commonjs",
+    "migration:generate": "NODE_ENV=development npm run typeorm migration:generate -- -d ./src/config/database.ts",
+    "migration:run": "NODE_ENV=development npm run typeorm migration:run -- -d ./src/config/database.ts",
+    "migration:revert": "NODE_ENV=development npm run typeorm migration:revert -- -d ./src/config/database.ts"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
