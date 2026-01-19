@@ -30,6 +30,9 @@ export class Product {
   @Column({ type: 'varchar', length: 255, nullable: true })
   local_storage?: string;
 
+  @Column({ type: 'bigint' })
+  created_by!: number;
+
   @CreateDateColumn()
   created_at!: Date;
 
