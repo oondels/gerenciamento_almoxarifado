@@ -1,6 +1,7 @@
 import { DataSource } from 'typeorm';
 import { Product } from '../models/Product';
 import { Movimentation } from '../models/Movimentation';
+import { AllowedUser } from '../models/AllowedUser';
 import { config } from "./env"
 
 export const AppDataSource = new DataSource({
@@ -12,7 +13,7 @@ export const AppDataSource = new DataSource({
   database: config.database.name || 'almoxarifado',
   synchronize: false,
   logging: false,
-  entities: [Product, Movimentation],
+  entities: [Product, Movimentation, AllowedUser],
   migrations: [config.env === 'development' ? "src/migrations/**/*.ts" : "src/migrations/**/*.js"],
   subscribers: [],
 });
