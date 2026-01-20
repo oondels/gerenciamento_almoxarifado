@@ -77,6 +77,17 @@ export const createProductSchema = Joi.object({
     .allow(null, '')
     .messages({
       'string.max': 'O local de armazenamento deve ter no máximo 100 caracteres.'
+    }),
+
+  created_by: Joi.alternatives()
+    .try(
+      Joi.string().max(100),
+      Joi.number()
+    )
+    .required()
+    .messages({
+      'alternatives.types': 'O campo "created_by" deve ser uma string ou um número.',
+      'any.required': 'O campo "created_by" é obrigatório.'
     })
 });
 

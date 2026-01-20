@@ -7,7 +7,7 @@ import { CreateProductDTO, UpdateProductDTO } from '../types/ProductDTO';
  * Implementa as operações CRUD e endpoints de consulta.
  */
 export class ProductController {
-  constructor(private productService: ProductService) {}
+  constructor(private productService: ProductService) { }
 
   /**
    * Lista todos os produtos cadastrados com suporte a filtros.
@@ -34,9 +34,9 @@ export class ProductController {
         Object.entries(filters).filter(([_, value]) => value !== undefined)
       );
 
-      
+
       const products = await this.productService.findAll(Object.keys(activeFilters).length > 0 ? activeFilters : undefined);
-      
+
       return res.status(200).json({
         success: true,
         data: products,
@@ -77,6 +77,16 @@ export class ProductController {
       return res.status(200).json({
         success: true,
         data: product,
+      });
+    } catch (error) {
+      const statusCode = error instanceof Error && error.message === 'Product not found' ? 404 : 500;
+      return res.status(statusCode).json({
+        success: false,
+        message: error instanceof Error ? error.message : 'Error fetching product',
+      });
+    }
+  }
+
   /**
    * Cria um novo produto no sistema.
    * 
@@ -88,16 +98,6 @@ export class ProductController {
    * POST /api/products
    * Body: { "name": "Parafuso", "category": "Ferragens", "quantity": 100 }
    */
-      });
-    } catch (error) {
-      const statusCode = error instanceof Error && error.message === 'Product not found' ? 404 : 500;
-      return res.status(statusCode).json({
-        success: false,
-        message: error instanceof Error ? error.message : 'Error fetching product',
-      });
-    }
-  }
-
   async create(req: Request, res: Response): Promise<Response> {
     try {
       const data: CreateProductDTO = req.body;
@@ -114,17 +114,6 @@ export class ProductController {
       return res.status(201).json({
         success: true,
         message: 'Product created successfully',
-  /**
-   * Atualiza um produto existente.
-   * 
-   * @param req - Request do Express contendo o ID nos params e dados atualizados no body
-   * @param res - Response do Express
-   * @returns Promise com o produto atualizado
-   * 
-   * @example
-   * PATCH /api/products/:id
-   * Body: { "quantity": 150, "value": 5.50 }
-   */
         data: product,
       });
     } catch (error) {
@@ -136,6 +125,17 @@ export class ProductController {
     }
   }
 
+  /**
+ * Atualiza um produto existente.
+ * 
+ * @param req - Request do Express contendo o ID nos params e dados atualizados no body
+ * @param res - Response do Express
+ * @returns Promise com o produto atualizado
+ * 
+ * @example
+ * PATCH /api/products/:id
+ * Body: { "quantity": 150, "value": 5.50 }
+ */
   async update(req: Request, res: Response): Promise<Response> {
     try {
       const { id } = req.params;
@@ -160,6 +160,17 @@ export class ProductController {
         success: true,
         message: 'Product updated successfully',
         data: product,
+      });
+    } catch (error) {
+      const statusCode = error instanceof Error && error.message === 'Product not found' ? 404 :
+        error instanceof Error && error.message.includes('already exists') ? 409 : 500;
+      return res.status(statusCode).json({
+        success: false,
+        message: error instanceof Error ? error.message : 'Error updating product',
+      });
+    }
+  }
+
   /**
    * Remove um produto do sistema.
    * 
@@ -170,33 +181,11 @@ export class ProductController {
    * @example
    * DELETE /api/products/:id
    */
-      });
-    } catch (error) {
-      const statusCode = error instanceof Error && error.message === 'Product not found' ? 404 :
-                         error instanceof Error && error.message.includes('already exists') ? 409 : 500;
-      return res.status(statusCode).json({
-        success: false,
-        message: error instanceof Error ? error.message : 'Error updating product',
-      });
-    }
-  }
-
   async delete(req: Request, res: Response): Promise<Response> {
     try {
       const { id } = req.params;
 
-  /**
-   * Retorna estatísticas e métricas do dashboard de produtos.
-   * Suporta filtros por categoria, status de estoque, localização e período.
-   * 
-   * @param req - Request do Express contendo filtros opcionais em query params
-   * @param res - Response do Express
-   * @returns Promise com estatísticas agregadas dos produtos
-   * 
-   * @example
-   * GET /api/products/stats/dashboard?year=2026&month=1
-   * GET /api/products/stats/dashboard?category=Ferragens&stock_status=low_stock
-   */
+
       if (!id) {
         return res.status(400).json({
           success: false,
@@ -218,6 +207,18 @@ export class ProductController {
     }
   }
 
+  /**
+   * Retorna estatísticas e métricas do dashboard de produtos.
+   * Suporta filtros por categoria, status de estoque, localização e período.
+   * 
+   * @param req - Request do Express contendo filtros opcionais em query params
+   * @param res - Response do Express
+   * @returns Promise com estatísticas agregadas dos produtos
+   * 
+   * @example
+   * GET /api/products/stats/dashboard?year=2026&month=1
+   * GET /api/products/stats/dashboard?category=Ferragens&stock_status=low_stock
+   */
   async dashboard(req: Request, res: Response): Promise<Response> {
     try {
       const filters = {
