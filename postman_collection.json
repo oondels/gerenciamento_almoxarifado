@@ -1,0 +1,450 @@
+{
+  "info": {
+    "name": "Sistema de Gerenciamento de Almoxarifado",
+    "description": "Collection completa da API do Sistema de Gerenciamento de Almoxarifado\n\nDocumentação: https://github.com/oondels/gerenciamento_almoxarifado",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "1234567"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            },
+            "description": "Verifica se a API está rodando e retorna a versão."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "List All Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/products",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products"]
+            },
+            "description": "Lista todos os produtos cadastrados sem filtros."
+          },
+          "response": []
+        },
+        {
+          "name": "List Products with Filters",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/products?category=Ferragens&stock_status=low_stock",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products"],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "Ferragens",
+                  "description": "Filtra por categoria"
+                },
+                {
+                  "key": "stock_status",
+                  "value": "low_stock",
+                  "description": "Filtra por status de estoque: in_stock, out_stock, low_stock"
+                },
+                {
+                  "key": "codigo",
+                  "value": "",
+                  "description": "Filtra por código do produto",
+                  "disabled": true
+                },
+                {
+                  "key": "serial_number",
+                  "value": "",
+                  "description": "Filtra por número de série",
+                  "disabled": true
+                },
+                {
+                  "key": "local_storage",
+                  "value": "",
+                  "description": "Filtra por localização",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Lista produtos com filtros opcionais."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Product by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/products/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{product_id}}",
+                  "description": "UUID do produto"
+                }
+              ]
+            },
+            "description": "Busca um produto específico por ID."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Product",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Parafuso M8 x 50mm\",\n  \"category\": \"Ferragens\",\n  \"codigo\": \"PAR-M8-50\",\n  \"serial_number\": \"SN123456\",\n  \"minimal_quantity\": 20,\n  \"quantity\": 100,\n  \"value\": 0.50,\n  \"local_storage\": \"Prateleira A1\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/products",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products"]
+            },
+            "description": "Cria um novo produto no sistema.\n\nCampos obrigatórios:\n- name (string)\n- category (string)\n\nCampos opcionais:\n- codigo (string, único)\n- serial_number (string)\n- minimal_quantity (number, >= 0)\n- quantity (number, >= 0)\n- value (number, decimal)\n- local_storage (string)"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Product",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 150,\n  \"value\": 0.75,\n  \"local_storage\": \"Prateleira B2\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/products/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{product_id}}",
+                  "description": "UUID do produto"
+                }
+              ]
+            },
+            "description": "Atualiza um produto existente. Todos os campos são opcionais, mas pelo menos um deve ser fornecido."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Product",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/products/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{product_id}}",
+                  "description": "UUID do produto"
+                }
+              ]
+            },
+            "description": "Remove um produto do sistema."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Products Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/products/stats/dashboard?year=2026&month=1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", "stats", "dashboard"],
+              "query": [
+                {
+                  "key": "year",
+                  "value": "2026",
+                  "description": "Filtra por ano (>= 1900)"
+                },
+                {
+                  "key": "month",
+                  "value": "1",
+                  "description": "Filtra por mês (1-12)"
+                },
+                {
+                  "key": "start_date",
+                  "value": "2026-01-01",
+                  "description": "Data de início (YYYY-MM-DD)",
+                  "disabled": true
+                },
+                {
+                  "key": "end_date",
+                  "value": "2026-12-31",
+                  "description": "Data de fim (YYYY-MM-DD)",
+                  "disabled": true
+                },
+                {
+                  "key": "category",
+                  "value": "",
+                  "description": "Filtra por categoria",
+                  "disabled": true
+                },
+                {
+                  "key": "stock_status",
+                  "value": "",
+                  "description": "Filtra por status de estoque",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Retorna estatísticas agregadas do dashboard de produtos com suporte a filtros por período e características do produto."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Movimentations",
+      "item": [
+        {
+          "name": "List All Movimentations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/movimentations",
+              "host": ["{{base_url}}"],
+              "path": ["api", "movimentations"]
+            },
+            "description": "Lista todas as movimentações cadastradas no sistema."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Movimentation by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/movimentations/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "movimentations", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{movimentation_id}}",
+                  "description": "UUID da movimentação"
+                }
+              ]
+            },
+            "description": "Busca uma movimentação específica por ID."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Movimentations by Product",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/movimentations/product/:productId",
+              "host": ["{{base_url}}"],
+              "path": ["api", "movimentations", "product", ":productId"],
+              "variable": [
+                {
+                  "key": "productId",
+                  "value": "{{product_id}}",
+                  "description": "UUID do produto"
+                }
+              ]
+            },
+            "description": "Lista todas as movimentações de um produto específico."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Movimentation - Inbound",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"inbound\",\n  \"product_id\": \"{{product_id}}\",\n  \"movimented_by\": 12345,\n  \"quantity\": 50,\n  \"local_storage\": \"Prateleira A1\",\n  \"appointment\": \"Recebimento de compra fornecedor XYZ\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/movimentations",
+              "host": ["{{base_url}}"],
+              "path": ["api", "movimentations"]
+            },
+            "description": "Registra uma entrada de produtos no estoque.\n\nTipo: inbound (entrada)\nAção: Adiciona quantidade ao estoque"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Movimentation - Outbound",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"outbound\",\n  \"product_id\": \"{{product_id}}\",\n  \"movimented_by\": 12345,\n  \"quantity\": 20,\n  \"appointment\": \"Saída para obra 123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/movimentations",
+              "host": ["{{base_url}}"],
+              "path": ["api", "movimentations"]
+            },
+            "description": "Registra uma saída de produtos do estoque.\n\nTipo: outbound (saída)\nAção: Subtrai quantidade do estoque\nValidação: Verifica se há quantidade suficiente"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Movimentation - Transfer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"transfer\",\n  \"product_id\": \"{{product_id}}\",\n  \"movimented_by\": 12345,\n  \"quantity\": 30,\n  \"local_storage\": \"Prateleira C3\",\n  \"appointment\": \"Reorganização do almoxarifado\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/movimentations",
+              "host": ["{{base_url}}"],
+              "path": ["api", "movimentations"]
+            },
+            "description": "Registra uma transferência de localização do produto.\n\nTipo: transfer (transferência)\nAção: Mantém quantidade, altera localização"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Movimentation - Adjustment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"adjustment\",\n  \"product_id\": \"{{product_id}}\",\n  \"movimented_by\": 12345,\n  \"quantity\": 75,\n  \"appointment\": \"Ajuste após inventário\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/movimentations",
+              "host": ["{{base_url}}"],
+              "path": ["api", "movimentations"]
+            },
+            "description": "Registra um ajuste manual de estoque.\n\nTipo: adjustment (ajuste)\nAção: Define quantidade absoluta no estoque"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Movimentations Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/movimentations/stats/dashboard?limit=20&year=2026&month=1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "movimentations", "stats", "dashboard"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Limita movimentações recentes (padrão: 10)"
+                },
+                {
+                  "key": "year",
+                  "value": "2026",
+                  "description": "Filtra por ano (>= 1900)"
+                },
+                {
+                  "key": "month",
+                  "value": "1",
+                  "description": "Filtra por mês (1-12)"
+                },
+                {
+                  "key": "start_date",
+                  "value": "2026-01-01",
+                  "description": "Data de início (YYYY-MM-DD)",
+                  "disabled": true
+                },
+                {
+                  "key": "end_date",
+                  "value": "2026-12-31",
+                  "description": "Data de fim (YYYY-MM-DD)",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Retorna estatísticas agregadas do dashboard de movimentações com suporte a filtros por período."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:9137",
+      "type": "string"
+    },
+    {
+      "key": "product_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "movimentation_id",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
