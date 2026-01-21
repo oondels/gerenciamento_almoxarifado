@@ -6,6 +6,7 @@ import { Product } from '../models/Product';
 import { validateRequest } from '../middlewares/validate.middleware';
 import { createProductSchema, updateProductSchema } from '../dtos/product.dto';
 import { productQuerySchema } from '../dtos/productQuery.dto';
+import { checkUserPermission } from '../middlewares/checkUserPermission';
 
 const router = Router();
 
@@ -16,8 +17,8 @@ const productController = new ProductController(productService);
 router.get('/stats/dashboard', (req, res) => productController.dashboard(req, res));
 router.get('/', (req, res) => productController.list(req, res));
 router.get('/:id', (req, res) => productController.getById(req, res));
-router.post('/', validateRequest(createProductSchema, 'body'), (req, res) => productController.create(req, res));
-router.patch('/:id', validateRequest(updateProductSchema, 'body'), (req, res) => productController.update(req, res));
-router.delete('/:id', (req, res) => productController.delete(req, res));
+router.post('/', checkUserPermission(), validateRequest(createProductSchema, 'body'), (req, res) => productController.create(req, res));
+router.patch('/:id', checkUserPermission(), validateRequest(updateProductSchema, 'body'), (req, res) => productController.update(req, res));
+router.delete('/:id', checkUserPermission(), (req, res) => productController.delete(req, res));
 
 export default router;
