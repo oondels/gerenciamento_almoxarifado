@@ -33,6 +33,9 @@ export class Product {
   @Column({ type: 'bigint' })
   created_by!: number;
 
+  @Column({ type: 'bigint', nullable: true})
+  updated_by?: number;
+
   @CreateDateColumn()
   created_at!: Date;
 
