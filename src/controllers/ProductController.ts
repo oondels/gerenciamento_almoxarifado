@@ -147,11 +147,15 @@ export class ProductController {
           message: 'Product ID is required',
         });
       }
+      
+      if (!data.updated_by) {
+        data.updated_by = Number(req.headers['x-rfid'])
+      }      
 
       if (Object.keys(data).length === 0) {
         return res.status(400).json({
           success: false,
-          message: 'At least one field must be provided for update',
+          message: 'Deve haver pelo menos um campo alterado para realizar o update',
         });
       }
 

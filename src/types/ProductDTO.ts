@@ -18,4 +18,6 @@ export interface UpdateProductDTO {
   quantity?: number;
   value?: number;
   local_storage?: string;
+  updated_by: number;
+  editReason?: string
 }
