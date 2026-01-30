@@ -52,7 +52,7 @@ const envSchema = Joi.object({
     .default("http://localhost:5173")
     .description("Frontend URL for links in notifications")
 })
-  .unknown()         // allow extra env vars
+  .unknown()
   .required();
 
 const { error, value: envVars } = envSchema.validate(process.env, {
