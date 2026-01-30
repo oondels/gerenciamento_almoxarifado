@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { MovimentationService } from '../services/MovimentationService';
+import { ProductService } from '../services/ProductService';
 import { CreateMovimentationDTO } from '../types/MovimentationDTO';
 
 /**
@@ -7,7 +8,7 @@ import { CreateMovimentationDTO } from '../types/MovimentationDTO';
  * Implementa operações de criação, consulta e estatísticas de movimentações.
  */
 export class MovimentationController {
-  constructor(private movimentationService: MovimentationService) {}
+  constructor(private movimentationService: MovimentationService, private productService: ProductService) {}
 
   /**
    * Cria uma nova movimentação de estoque.
@@ -24,7 +25,6 @@ export class MovimentationController {
   create = async (req: Request, res: Response): Promise<void> => {
     try {
       const data: CreateMovimentationDTO = req.body;
-
       // Validate required fields
       if (!data.type) {
         res.status(400).json({
@@ -40,6 +40,21 @@ export class MovimentationController {
           message: 'O ID do produto é obrigatório'
         });
         return;
+      }
+
+      // Validate product exists
+      try {
+        await this.productService.findById(data.product_id);
+      } catch (error) {
+        if (error instanceof Error && error.message.includes('not found')) {
+          res.status(400).json({
+            success: false,
+            message: 'Produto não encontrado'
+          });
+          return;
+        }
+
+        throw error;
       }
 
       if (!data.movimented_by) {

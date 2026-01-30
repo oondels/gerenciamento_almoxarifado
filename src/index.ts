@@ -1,7 +1,7 @@
 import express, { Response, Request, NextFunction } from "express";
 import { AppDataSource } from "./config/database";
 import productRoutes from "./routes/productRoutes";
-import movimentationRoutes from "./routes/movimentationRoutes";
+import movimentationRoutes from "./routes/movimentation.route";
 import allowedUserRoutes from "./routes/allowedUser.route";
 import { AppError } from "./utils/AppError";
 import { config } from "./config/env";
