@@ -1,12 +1,16 @@
 services:
-  vue-prod:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    environment:
-      - NODE_ENV=development
-    volumes:
-      - /var/www/dasssest.com/uploads/:/app/uploads:rw,z
+  almoxarifado_ti:
+    build: .
+    container_name: almoxarifado_ti
     ports:
-      - "2307:80"
-    restart: unless-stopped
+      - "9137:9137"
+    env_file:
+      - .env.production
+    environment:
+      - DEV_ENV=production
+    networks:
+      - dass_private
+
+networks:
+  dass_private:
+    external: true

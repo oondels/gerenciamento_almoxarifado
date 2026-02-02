@@ -1,21 +1,17 @@
-FROM node:18-alpine AS builder
-
+FROM node:20-alpine AS builder
 WORKDIR /app
-
 COPY package*.json ./
-
-RUN npm ci
-
+RUN npm install
 COPY . .
+RUN npm run build
 
-RUN nom run build
+FROM node:20-alpine AS production
+WORKDIR /app
+COPY package*.json ./
+RUN npm install --only=production
 
-FROM nginx:stable-alpine
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/.env.production ./
 
-COPY --from=builder /app/dist /usr/share/nginx/html
-
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
+EXPOSE 9137
+CMD ["node", "dist/index.js"]

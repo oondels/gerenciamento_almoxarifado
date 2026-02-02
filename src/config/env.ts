@@ -3,7 +3,7 @@ import dotenv from "dotenv"
 import Joi from "joi"
 
 const development = process.env.NODE_ENV === 'development'
-const envfile = development ? ".env" : ".env.prod"
+const envfile = development ? ".env" : ".env.production"
 dotenv.config({
   path: path.resolve(__dirname, "../../", envfile)
 })
