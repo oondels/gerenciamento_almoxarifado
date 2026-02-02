@@ -1,7 +1,7 @@
 import express, { Response, Request, NextFunction } from "express";
 import { AppDataSource } from "./config/database";
 import productRoutes from "./routes/productRoutes";
-import movimentationRoutes from "./routes/movimentationRoutes";
+import movimentationRoutes from "./routes/movimentation.route";
 import allowedUserRoutes from "./routes/allowedUser.route";
 import { AppError } from "./utils/AppError";
 import { config } from "./config/env";
@@ -28,7 +28,11 @@ app.use("/api/users", allowedUserRoutes);
 app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
   console.error(`Error on method ${req.method} - ${req.originalUrl}:`, error);
   if (error instanceof AppError) {
-    res.status(error.statusCode).json({ message: error.message });
+    res.status(error.statusCode).json({ 
+      message: error.message,
+      status: 'error',
+      codigo: error.statusCode 
+    });
     return
   }
 

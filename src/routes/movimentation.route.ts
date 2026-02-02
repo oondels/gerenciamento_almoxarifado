@@ -6,13 +6,15 @@ import { MovimentationService } from '../services/MovimentationService';
 import { MovimentationController } from '../controllers/MovimentationController';
 import { validateRequest } from '../middlewares/validate.middleware';
 import { createMovimentationSchema } from '../dtos/movimentation.dto';
+import { ProductService } from '../services/ProductService';
 
 const router = Router();
 
 const movimentationRepository = AppDataSource.getRepository(Movimentation);
 const productRepository = AppDataSource.getRepository(Product);
+const productService = new ProductService(productRepository);
 const movimentationService = new MovimentationService(movimentationRepository, productRepository);
-const movimentationController = new MovimentationController(movimentationService);
+const movimentationController = new MovimentationController(movimentationService, productService);
 
 router.get('/stats/dashboard', (req, res) => movimentationController.dashboard(req, res));
 router.post('/', validateRequest(createMovimentationSchema, 'body'), (req, res) => movimentationController.create(req, res));

@@ -1,0 +1,16 @@
+services:
+  almoxarifado_ti:
+    build: .
+    container_name: almoxarifado_ti
+    ports:
+      - "9137:9137"
+    env_file:
+      - .env.production
+    environment:
+      - DEV_ENV=production
+    networks:
+      - dass_private
+
+networks:
+  dass_private:
+    external: true

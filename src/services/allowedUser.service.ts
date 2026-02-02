@@ -60,4 +60,14 @@ export class AllowedUserService {
       throw new AppError('Erro interno no servidor', 500);
     }
   }
+
+  async isUserAllowed(rfid: number): Promise<boolean> {
+    try {
+      const user = await this.allowedUserRepository.findOne({ where: { rfid } });
+
+      return !!user;
+    } catch (error) {
+      throw new AppError('Erro interno no servidor', 500);
+    }
+  }
 }

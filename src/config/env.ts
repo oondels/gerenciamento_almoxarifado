@@ -3,7 +3,7 @@ import dotenv from "dotenv"
 import Joi from "joi"
 
 const development = process.env.NODE_ENV === 'development'
-const envfile = development ? ".env" : ".env.prod"
+const envfile = development ? ".env" : ".env.production"
 dotenv.config({
   path: path.resolve(__dirname, "../../", envfile)
 })
@@ -52,7 +52,7 @@ const envSchema = Joi.object({
     .default("http://localhost:5173")
     .description("Frontend URL for links in notifications")
 })
-  .unknown()         // allow extra env vars
+  .unknown()
   .required();
 
 const { error, value: envVars } = envSchema.validate(process.env, {

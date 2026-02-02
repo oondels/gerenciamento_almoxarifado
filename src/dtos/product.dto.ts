@@ -104,6 +104,14 @@ export const updateProductSchema = Joi.object({
       'string.max': 'O nome do produto deve ter no máximo 255 caracteres.'
     }),
 
+  category: Joi.string()
+    .max(100)
+    .optional()
+    .allow(null, '')
+    .messages({
+      'string.max': 'A categoria deve ter no máximo 100 caracteres.'
+    }),
+
   codigo: Joi.string()
     .max(50)
     .optional()
@@ -156,5 +164,24 @@ export const updateProductSchema = Joi.object({
     .allow(null, '')
     .messages({
       'string.max': 'O local de armazenamento deve ter no máximo 100 caracteres.'
-    })
+    }),
+
+  updated_by: Joi.alternatives()
+    .try(
+      Joi.string().max(100),
+      Joi.number()
+    )
+    .required()
+    .messages({
+      'alternatives.types': 'O campo "updated_by" deve ser uma string ou um número.',
+      'any.required': 'O campo "updated_by" é obrigatório.'
+    }),
+
+  editReason: Joi.string()
+    .max(255)
+    .optional()
+    .allow(null, '')
+    .messages({
+      'string.max': 'A justificativa deve ter no máximo 255 caracteres.'
+    }),
 });

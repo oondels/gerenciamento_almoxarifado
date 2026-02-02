@@ -1,13 +1,14 @@
 import { Request, Response } from 'express';
 import { ProductService } from '../services/ProductService';
 import { CreateProductDTO, UpdateProductDTO } from '../types/ProductDTO';
+import { MovimentationService } from '../services/MovimentationService';
 
 /**
  * Controller responsável por gerenciar as requisições relacionadas a produtos.
  * Implementa as operações CRUD e endpoints de consulta.
  */
 export class ProductController {
-  constructor(private productService: ProductService) { }
+  constructor(private productService: ProductService, private movimentationService: MovimentationService) { }
 
   /**
    * Lista todos os produtos cadastrados com suporte a filtros.
@@ -139,7 +140,7 @@ export class ProductController {
   async update(req: Request, res: Response): Promise<Response> {
     try {
       const { id } = req.params;
-      const data: UpdateProductDTO = req.body;
+      const data: UpdateProductDTO = req.body;      
 
       if (!id) {
         return res.status(400).json({
@@ -148,10 +149,33 @@ export class ProductController {
         });
       }
 
+      const productToEdit = await this.productService.findById(id as string);
+      if (!productToEdit) {
+        return res.status(404).json({
+          success: false,
+          message: 'Product not found',
+        });
+      }
+
+      // Se houver alteração de quantidade cria uma nova movimento de estoque como ajuste
+      if (data.quantity && data.quantity !== productToEdit.quantity) {
+        await this.movimentationService.create({
+          product_id: productToEdit.id,
+          quantity: data.quantity - (productToEdit.quantity || 0),
+          type: 'adjustment',
+          movimented_by: data.updated_by,
+          appointment: data.editReason || 'Atualização de quantidade via edição de produto',
+        });
+      }
+      
+      if (!data.updated_by) {
+        data.updated_by = Number(req.headers['x-rfid'])
+      }      
+
       if (Object.keys(data).length === 0) {
         return res.status(400).json({
           success: false,
-          message: 'At least one field must be provided for update',
+          message: 'Deve haver pelo menos um campo alterado para realizar o update',
         });
       }
 
