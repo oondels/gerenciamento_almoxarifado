@@ -28,7 +28,7 @@ export class MovimentationService {
       const productRepository = manager.getRepository(Product);
 
       // Validate type
-      const validTypes = ['inbound', 'outbound', 'transfer', 'adjustment'];
+      const validTypes = ['inbound', 'outbound', 'transfer', 'adjustment', 'loan'];
       if (!validTypes.includes(data.type)) {
         throw new Error(`Invalid type. Must be one of: ${validTypes.join(', ')}`);
       }
@@ -42,9 +42,11 @@ export class MovimentationService {
         throw new Error('Product not found');
       }
 
+      console.log("Nova quantidade:", data.quantity);
+      
       // Validate quantity
       if (data.quantity <= 0) {
-        throw new Error('Quantity must be greater than zero');
+        throw new Error('Quantidade tem que ser amior que 0.');
       }
 
       // Calculate new quantity based on type
@@ -70,6 +72,15 @@ export class MovimentationService {
           // For transfer, we don't change quantity, only location
           newQuantity = product.quantity;
           break;
+        case 'loan':
+          if (product.quantity < data.quantity) {
+            throw new Error(
+              `Insufficient stock. Available: ${product.quantity}, Requested: ${data.quantity}`
+            );
+          }
+          newQuantity = product.quantity - data.quantity;
+          product.loaned_quantity += data.quantity;
+          break;
       }
 
       // Create movimentation record with old and new states
@@ -83,6 +94,8 @@ export class MovimentationService {
         product_old_local_storage: product.local_storage,
         local_storage: data.local_storage || product.local_storage,
         appointment: data.appointment,
+        destination_type: data.destination_type,
+        destination_value: data.destination_value,
       });
 
       // Save movimentation

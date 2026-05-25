@@ -22,6 +22,7 @@ router.get('/stats/dashboard', (req, res) => productController.dashboard(req, re
 router.get('/', (req, res) => productController.list(req, res));
 router.get('/:id', (req, res) => productController.getById(req, res));
 router.post('/', checkUserPermission(), validateRequest(createProductSchema, 'body'), (req, res) => productController.create(req, res));
+router.post('/:id/replenish', (req, res) => productController.replenish(req, res));
 router.patch('/:id', checkUserPermission(), validateRequest(updateProductSchema, 'body'), (req, res) => productController.update(req, res));
 router.delete('/:id', checkUserPermission(), (req, res) => productController.delete(req, res));
 

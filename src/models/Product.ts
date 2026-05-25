@@ -24,6 +24,9 @@ export class Product {
   @Column({ type: 'int', default: 0 })
   quantity!: number;
 
+  @Column({ type: 'int', default: 0 })
+  loaned_quantity!: number;
+
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   value?: number;
 

@@ -14,6 +14,9 @@ export class AllowedUser {
   @Column({ type: 'bigint' })
   rfid!: number;
 
+  @Column({ type: 'varchar', length: 50, default: 'operator' })
+  role!: string;
+
   @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   created_at!: Date;
 

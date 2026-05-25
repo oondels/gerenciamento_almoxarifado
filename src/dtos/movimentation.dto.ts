@@ -6,11 +6,11 @@ import Joi from 'joi';
  */
 export const createMovimentationSchema = Joi.object({
   type: Joi.string()
-    .valid('inbound', 'outbound', 'transfer', 'adjustment')
+    .valid('inbound', 'outbound', 'transfer', 'adjustment', 'loan')
     .required()
     .messages({
       'string.empty': 'O tipo de movimentação é obrigatório.',
-      'any.only': 'O tipo de movimentação deve ser: inbound, outbound, transfer ou adjustment.',
+      'any.only': 'O tipo de movimentação deve ser: inbound, outbound, transfer, adjustment ou loan.',
       'any.required': 'O tipo de movimentação é obrigatório.'
     }),
 
@@ -58,5 +58,27 @@ export const createMovimentationSchema = Joi.object({
     .allow(null, '')
     .messages({
       'string.base': 'As notas devem ser texto.'
+    }),
+
+  destination_type: Joi.string()
+    .valid('Pessoa', 'Setor')
+    .optional()
+    .allow(null, '')
+    .when('type', {
+      is: 'loan',
+      then: Joi.required().messages({
+        'any.required': 'O tipo de destino é obrigatório para empréstimos.'
+      })
+    }),
+
+  destination_value: Joi.string()
+    .max(255)
+    .optional()
+    .allow(null, '')
+    .when('type', {
+      is: 'loan',
+      then: Joi.required().messages({
+        'any.required': 'O valor de destino é obrigatório para empréstimos.'
+      })
     })
 });

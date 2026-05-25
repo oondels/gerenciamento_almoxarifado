@@ -32,6 +32,7 @@ export class AllowedUserService {
         username: user[0].usuario,
         matricula: user[0].matricula,
         rfid: user[0].rfid,
+        role: data.role || 'operator',
       });
 
       return this.allowedUserRepository.save(newUser);
@@ -61,11 +62,11 @@ export class AllowedUserService {
     }
   }
 
-  async isUserAllowed(rfid: number): Promise<boolean> {
+  async getUserAllowed(rfid: number): Promise<AllowedUser | null> {
     try {
       const user = await this.allowedUserRepository.findOne({ where: { rfid } });
 
-      return !!user;
+      return user;
     } catch (error) {
       throw new AppError('Erro interno no servidor', 500);
     }

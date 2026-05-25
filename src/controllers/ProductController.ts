@@ -161,7 +161,7 @@ export class ProductController {
       if (data.quantity && data.quantity !== productToEdit.quantity) {
         await this.movimentationService.create({
           product_id: productToEdit.id,
-          quantity: data.quantity - (productToEdit.quantity || 0),
+          quantity: data.quantity,
           type: 'adjustment',
           movimented_by: data.updated_by,
           appointment: data.editReason || 'Atualização de quantidade via edição de produto',
@@ -313,6 +313,46 @@ export class ProductController {
       return res.status(500).json({
         success: false,
         message: 'Error fetching dashboard statistics',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  }
+
+  /**
+   * Solicita a reposição de um produto.
+   * Rota temporária que mocka a solicitação até que a regra seja definida.
+   */
+  async replenish(req: Request, res: Response): Promise<Response> {
+    try {
+      const { id } = req.params;
+
+      if (!id) {
+        return res.status(400).json({
+          success: false,
+          message: 'Product ID is required',
+        });
+      }
+
+      // Validar se o produto existe
+      const product = await this.productService.findById(id as string);
+      if (!product) {
+        return res.status(404).json({
+          success: false,
+          message: 'Product not found',
+        });
+      }
+
+      // Por enquanto mockamos o sucesso
+      console.log(`[REPOSIÇÃO SOLICITADA] Produto ${product.name} (ID: ${product.id}). Estoque Atual: ${product.quantity}, Mínimo: ${product.minimal_quantity}`);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Solicitação encaminhada ao setor de compras (Mock)',
+      });
+    } catch (error) {
+      return res.status(500).json({
+        success: false,
+        message: 'Error requesting replenish',
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }

@@ -1,4 +1,4 @@
-export type MovimentationType = 'inbound' | 'outbound' | 'transfer' | 'adjustment';
+export type MovimentationType = 'inbound' | 'outbound' | 'transfer' | 'adjustment' | 'loan';
 
 export interface CreateMovimentationDTO {
   type: MovimentationType;
@@ -7,4 +7,6 @@ export interface CreateMovimentationDTO {
   quantity: number;
   local_storage?: string;
   appointment?: string;
+  destination_type?: string;
+  destination_value?: string;
 }

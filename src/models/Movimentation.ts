@@ -37,6 +37,12 @@ export class Movimentation {
   @Column({ type: 'text', nullable: true })
   appointment?: string;
 
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  destination_type?: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  destination_value?: string;
+
   @CreateDateColumn()
   created_at!: Date;
 
