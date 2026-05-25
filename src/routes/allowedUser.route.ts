@@ -14,5 +14,6 @@ const allowedUserController = new AllowedUserController(allowedUserService);
 router.get('/', (req, res, next) => allowedUserController.list(req, res, next));
 router.post('/', checkUserPermission(['admin_master', 'admin']), (req, res, next) => allowedUserController.newUser(req, res, next));
 router.delete('/:id', checkUserPermission(['admin_master', 'admin']), (req, res, next) => allowedUserController.deleteUser(req, res, next));
+router.patch('/:id/role', checkUserPermission(['admin_master', 'admin']), (req, res, next) => allowedUserController.updateRole(req, res, next));
 
 export default router;

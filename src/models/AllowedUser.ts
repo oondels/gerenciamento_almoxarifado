@@ -14,7 +14,11 @@ export class AllowedUser {
   @Column({ type: 'bigint' })
   rfid!: number;
 
-  @Column({ type: 'varchar', length: 50, default: 'operator' })
+  @Column({ 
+    type: 'enum', 
+    enum: ['admin_master', 'admin', 'operator', 'intern'], 
+    default: 'operator' 
+  })
   role!: string;
 
   @CreateDateColumn({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })

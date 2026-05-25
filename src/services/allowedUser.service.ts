@@ -17,11 +17,17 @@ export class AllowedUserService {
     }
   }
 
-  async create(data: CreateAllowedUserDTO): Promise<AllowedUser> {
+  async create(data: CreateAllowedUserDTO, reqRfid: number): Promise<AllowedUser> {
     try {
+      const admin = await this.getUserAllowed(reqRfid);
+      if (!admin) throw new AppError('Admin não encontrado', 404);
+
+      if (admin.role === 'admin' && (data.role === 'admin' || data.role === 'admin_master')) {
+        throw new AppError('Ação bloqueada. Você não tem permissão para cadastrar administradores.', 403);
+      }
       const user = await this.queryRunner.query(`
         SELECT rfid, matricula, usuario from autenticacao.usuarios
-        WHERE matricula = $1
+        WHERE matricula = $1 OR rfid = $1
       `, [data.matricula])
 
       if (!user || user.length === 0) {
@@ -45,14 +51,46 @@ export class AllowedUserService {
     }
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: string, reqRfid: number): Promise<void> {
     try {
+      const admin = await this.getUserAllowed(reqRfid);
+      if (!admin) throw new AppError('Admin não encontrado', 404);
+
       const existing = await this.allowedUserRepository.findOne({ where: { id } });
       if (!existing) {
         throw new AppError('Usuário não encontrado', 404);
       }
 
+      if (admin.role === 'admin' && (existing.role === 'admin' || existing.role === 'admin_master')) {
+        throw new AppError('Ação bloqueada. Você não tem permissão para remover administradores.', 403);
+      }
+
       await this.allowedUserRepository.remove(existing);
+    } catch (error) {
+      if (error instanceof AppError) {
+        throw error;
+      }
+
+      throw new AppError('Erro interno no servidor', 500);
+    }
+  }
+
+  async updateRole(id: string, role: string, reqRfid: number): Promise<AllowedUser> {
+    try {
+      const admin = await this.getUserAllowed(reqRfid);
+      if (!admin) throw new AppError('Admin não encontrado', 404);
+
+      const existing = await this.allowedUserRepository.findOne({ where: { id } });
+      if (!existing) {
+        throw new AppError('Usuário não encontrado', 404);
+      }
+
+      if (admin.role === 'admin' && (existing.role === 'admin' || existing.role === 'admin_master' || role === 'admin' || role === 'admin_master')) {
+        throw new AppError('Ação bloqueada. Você não tem permissão para gerenciar administradores.', 403);
+      }
+
+      existing.role = role;
+      return await this.allowedUserRepository.save(existing);
     } catch (error) {
       if (error instanceof AppError) {
         throw error;

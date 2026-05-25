@@ -21,9 +21,9 @@ const productController = new ProductController(productService, movimentationSer
 router.get('/stats/dashboard', (req, res) => productController.dashboard(req, res));
 router.get('/', (req, res) => productController.list(req, res));
 router.get('/:id', (req, res) => productController.getById(req, res));
-router.post('/', checkUserPermission(), validateRequest(createProductSchema, 'body'), (req, res) => productController.create(req, res));
-router.post('/:id/replenish', (req, res) => productController.replenish(req, res));
-router.patch('/:id', checkUserPermission(), validateRequest(updateProductSchema, 'body'), (req, res) => productController.update(req, res));
-router.delete('/:id', checkUserPermission(), (req, res) => productController.delete(req, res));
+router.post('/', checkUserPermission(['admin_master', 'admin', 'operator']), validateRequest(createProductSchema, 'body'), (req, res) => productController.create(req, res));
+router.post('/:id/replenish', checkUserPermission(['admin_master', 'admin', 'operator', 'intern']), (req, res) => productController.replenish(req, res));
+router.patch('/:id', checkUserPermission(['admin_master', 'admin', 'operator']), validateRequest(updateProductSchema, 'body'), (req, res) => productController.update(req, res));
+router.delete('/:id', checkUserPermission(['admin_master', 'admin']), (req, res) => productController.delete(req, res));
 
 export default router;

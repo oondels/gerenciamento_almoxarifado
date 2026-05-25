@@ -95,6 +95,30 @@ src/
 
 Para uma documentação detalhada sobre a arquitetura do projeto, padrões de design utilizados, fluxo de dados e decisões arquiteturais, consulte [ARCHITECTURE.md](ARCHITECTURE.md).
 
+## Papéis e Autorizações (RBAC)
+
+O sistema conta com um controle de acesso baseado em funções (Role-Based Access Control) focado na segurança de operações. Todos os usuários devem portar um crachá com RFID válido.
+
+Existem 4 níveis de sistema:
+
+1. **Admin Master (`admin_master`)**
+   - **Acesso:** Total (leitura e escrita global).
+   - **Gerenciamento:** Pode cadastrar, editar e remover qualquer tipo de usuário ou administrador (inclusive outro Admin Master).
+   - **Ações:** Cadastro de produtos, edição, deleção, movimentações de estoque, etc.
+
+2. **Administrador (`admin`)**
+   - **Acesso:** Total para gerenciar os módulos operacionais.
+   - **Gerenciamento:** Pode cadastrar e remover usuários operacionais (`operator` e `intern`). *Não tem permissão para cadastrar nem alterar status de administradores*.
+   - **Ações:** Cadastro de produtos, edição, deleção, e movimentações de estoque.
+
+3. **Operador (`operator`)**
+   - **Acesso:** Funcional.
+   - **Ações permitidas:** Realizar cadastro de novos produtos (`POST`), atualizar produtos existentes (`PATCH`), realizar movimentações (entrada, saída, transferência, ajuste) e acessar todas as leituras de painel. Não pode remover produtos (`DELETE`) nem gerenciar usuários.
+
+4. **Estagiário (`intern`)**
+   - **Acesso:** Restrito.
+   - **Ações permitidas:** Apenas realizar movimentações de estoque (registrar empréstimos, repor peças, etc) e visualizar dados. Não pode cadastrar nem editar produtos.
+
 ## Documentação da API
 
 ### Postman Collection
