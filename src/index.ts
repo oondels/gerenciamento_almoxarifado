@@ -21,9 +21,9 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
-app.use("/api/products", productRoutes);
-app.use("/api/movimentations", movimentationRoutes);
-app.use("/api/users", allowedUserRoutes);
+app.use("/products", productRoutes);
+app.use("/movimentations", movimentationRoutes);
+app.use("/users", allowedUserRoutes);
 
 app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
   console.error(`Error on method ${req.method} - ${req.originalUrl}:`, error);
