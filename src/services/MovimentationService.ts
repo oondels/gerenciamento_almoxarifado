@@ -3,7 +3,7 @@ import { AppDataSource } from '../config/database';
 import { Movimentation } from '../models/Movimentation';
 import { Product } from '../models/Product';
 import { CreateMovimentationDTO } from '../types/MovimentationDTO';
-
+import { NotificationService } from './NotificationService';
 /**
  * Service responsável pela lógica de negócio relacionada a movimentações de estoque.
  * Gerencia entrada, saída, transferência e ajustes de produtos.
@@ -107,6 +107,18 @@ export class MovimentationService {
         product.local_storage = data.local_storage;
       }
       await productRepository.save(product);
+
+      // Check for low stock alert
+      const oldQuantity = movimentation.product_old_quantity ?? 0;
+      const minQuantity = product.minimal_quantity;
+      
+      const crossedMinimal = (oldQuantity > minQuantity && newQuantity <= minQuantity);
+      const crossedZero = (oldQuantity > 0 && newQuantity === 0);
+
+      if (crossedMinimal || crossedZero) {
+        const notificationService = new NotificationService();
+        notificationService.sendLowStockAlert(product, newQuantity);
+      }
 
       // Return movimentation with product relation
       const result = await movimentationRepository.findOne({
