@@ -3,6 +3,7 @@ import { AppDataSource } from "./config/database";
 import productRoutes from "./routes/productRoutes";
 import movimentationRoutes from "./routes/movimentation.route";
 import allowedUserRoutes from "./routes/allowedUser.route";
+import { settingsRoutes } from "./routes/settings.route";
 import { AppError } from "./utils/AppError";
 import { config } from "./config/env";
 
@@ -24,6 +25,7 @@ app.get("/", (req: Request, res: Response) => {
 app.use("/products", productRoutes);
 app.use("/movimentations", movimentationRoutes);
 app.use("/users", allowedUserRoutes);
+app.use("/settings", settingsRoutes);
 
 app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
   console.error(`Error on method ${req.method} - ${req.originalUrl}:`, error);
