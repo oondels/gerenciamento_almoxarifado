@@ -16,4 +16,6 @@ router.post('/', checkUserPermission(['admin_master', 'admin']), (req, res, next
 router.delete('/:id', checkUserPermission(['admin_master', 'admin']), (req, res, next) => allowedUserController.deleteUser(req, res, next));
 router.patch('/:id/role', checkUserPermission(['admin_master', 'admin']), (req, res, next) => allowedUserController.updateRole(req, res, next));
 
+router.get('/:matricula/notification', (req, res, next) => allowedUserController.getNotificationStatus(req, res, next));
+router.post('/:matricula/notification/toggle', (req, res, next) => allowedUserController.toggleNotificationStatus(req, res, next));
 export default router;

@@ -100,6 +100,79 @@ export class AllowedUserService {
     }
   }
 
+  async checkNotificationStatus(matricula: number): Promise<boolean> {
+    try {
+      const userAuth = await this.queryRunner.query(`
+        SELECT matricula from autenticacao.usuarios
+        WHERE matricula = $1
+      `, [matricula]);
+
+      if (!userAuth || userAuth.length === 0) {
+        throw new AppError('Usuário não cadastrado na base de autenticação', 404);
+      }
+
+      const emailRecord = await this.queryRunner.query(`
+        SELECT authorized_notifications_apps 
+        FROM autenticacao.emails 
+        WHERE matricula = $1
+      `, [matricula]);
+
+      if (!emailRecord || emailRecord.length === 0) {
+        return false;
+      }
+
+      const apps = emailRecord[0].authorized_notifications_apps || [];
+      
+      return apps.includes('almoxarifado_ti');
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      throw new AppError('Erro interno no servidor ao checar notificações', 500);
+    }
+  }
+
+  async toggleNotificationStatus(matricula: number, enable: boolean): Promise<boolean> {
+    try {
+      const userAuth = await this.queryRunner.query(`
+        SELECT matricula from autenticacao.usuarios
+        WHERE matricula = $1
+      `, [matricula]);
+
+      if (!userAuth || userAuth.length === 0) {
+        throw new AppError('Usuário não cadastrado na base de autenticação', 404);
+      }
+
+      const emailRecord = await this.queryRunner.query(`
+        SELECT authorized_notifications_apps 
+        FROM autenticacao.emails 
+        WHERE matricula = $1
+      `, [matricula]);
+
+      if (!emailRecord || emailRecord.length === 0) {
+        throw new AppError('Usuário não possui e-mail cadastrado', 404);
+      }
+
+      let apps: string[] = emailRecord[0].authorized_notifications_apps || [];
+      const hasApp = apps.includes('almoxarifado_ti');
+
+      if (enable && !hasApp) {
+        apps.push('almoxarifado_ti');
+      } else if (!enable && hasApp) {
+        apps = apps.filter(app => app !== 'almoxarifado_ti');
+      }
+
+      await this.queryRunner.query(`
+        UPDATE autenticacao.emails
+        SET authorized_notifications_apps = $1
+        WHERE matricula = $2
+      `, [JSON.stringify(apps), matricula]);
+
+      return enable;
+    } catch (error) {
+      if (error instanceof AppError) throw error;
+      throw new AppError('Erro interno no servidor ao atualizar notificações', 500);
+    }
+  }
+
   async getUserAllowed(rfid: number): Promise<AllowedUser | null> {
     try {
       const user = await this.allowedUserRepository.findOne({ where: { rfid } });

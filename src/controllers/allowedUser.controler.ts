@@ -70,4 +70,39 @@ export class AllowedUserController {
       next(error);
     }
   }
+
+  async getNotificationStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const matricula = Number(req.params.matricula);
+      if (!matricula || isNaN(matricula)) {
+        throw new AppError('Matrícula inválida', 400);
+      }
+
+      const enabled = await this.allowedUserService.checkNotificationStatus(matricula);
+      res.status(200).json({ enabled });
+      return;
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async toggleNotificationStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const matricula = Number(req.params.matricula);
+      const { enable } = req.body;
+
+      if (!matricula || isNaN(matricula)) {
+        throw new AppError('Matrícula inválida', 400);
+      }
+      if (typeof enable !== 'boolean') {
+        throw new AppError('O campo enable (boolean) é obrigatório', 400);
+      }
+
+      const newStatus = await this.allowedUserService.toggleNotificationStatus(matricula, enable);
+      res.status(200).json({ enabled: newStatus });
+      return;
+    } catch (error) {
+      next(error);
+    }
+  }
 }
