@@ -4,6 +4,7 @@ import { Movimentation } from '../models/Movimentation';
 import { AllowedUser } from '../models/AllowedUser';
 import { StorageLocation } from '../models/StorageLocation';
 import { Sector } from '../models/Sector';
+import { ProductItem } from '../models/ProductItem';
 import { config } from "./env"
 
 export const AppDataSource = new DataSource({
@@ -15,7 +16,7 @@ export const AppDataSource = new DataSource({
   database: config.database.name || 'almoxarifado',
   synchronize: false,
   logging: false,
-  entities: [Product, Movimentation, AllowedUser, StorageLocation, Sector],
+  entities: [Product, Movimentation, AllowedUser, StorageLocation, Sector, ProductItem],
   migrations: [config.env === 'development' ? "src/migrations/**/*.ts" : "src/migrations/**/*.js"],
   subscribers: [],
 });
