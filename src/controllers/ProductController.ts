@@ -157,16 +157,7 @@ export class ProductController {
         });
       }
 
-      // Se houver alteração de quantidade cria uma nova movimento de estoque como ajuste
-      if (data.quantity && data.quantity !== productToEdit.quantity) {
-        await this.movimentationService.create({
-          product_id: productToEdit.id,
-          quantity: data.quantity,
-          type: 'adjustment',
-          movimented_by: data.updated_by,
-          appointment: data.editReason || 'Atualização de quantidade via edição de produto',
-        });
-      }
+
       
       if (!data.updated_by) {
         data.updated_by = Number(req.headers['x-rfid'])
@@ -354,6 +345,22 @@ export class ProductController {
         success: false,
         message: 'Error requesting replenish',
         error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  }
+
+  async getAvailableItems(req: Request, res: Response): Promise<Response> {
+    try {
+      const { id } = req.params;
+      const items = await this.productService.getAvailableItems(id as string);
+      return res.status(200).json({
+        success: true,
+        data: items,
+      });
+    } catch (error: any) {
+      return res.status(404).json({
+        success: false,
+        message: error.message,
       });
     }
   }

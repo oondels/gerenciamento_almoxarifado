@@ -1,5 +1,7 @@
 import { Repository } from 'typeorm';
+import { AppDataSource } from '../config/database';
 import { Product } from '../models/Product';
+import { ProductItem } from '../models/ProductItem';
 import { CreateProductDTO, UpdateProductDTO } from '../types/ProductDTO';
 
 interface ProductFilters {
@@ -94,6 +96,7 @@ export class ProductService {
     try {
       const product = await this.productRepository.findOne({
         where: { id },
+        relations: ['items']
       });
 
       if (!product) {
@@ -135,7 +138,7 @@ export class ProductService {
       const product = this.productRepository.create({
         ...data,
         minimal_quantity: data.minimal_quantity ?? 0,
-        quantity: data.quantity ?? 0,
+        quantity: 0,
   /**
    * Atualiza um produto existente.
    * Valida a quantidade mínima e verifica duplicação de código.
@@ -345,5 +348,13 @@ export class ProductService {
     } catch (error) {
       throw new Error(`Error fetching dashboard stats: ${error}`);
     }
+  }
+
+  async getAvailableItems(productId: string): Promise<ProductItem[]> {
+    const itemRepo = AppDataSource.getRepository(ProductItem);
+    return itemRepo.find({
+      where: { product_id: productId, status: 'AVAILABLE' },
+      order: { created_at: 'ASC' }
+    });
   }
 }

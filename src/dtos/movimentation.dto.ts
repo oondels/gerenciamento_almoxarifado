@@ -80,5 +80,14 @@ export const createMovimentationSchema = Joi.object({
       then: Joi.required().messages({
         'any.required': 'O valor de destino é obrigatório para empréstimos.'
       })
+    }),
+
+  items: Joi.array().items(
+    Joi.object({
+      patrimonio: Joi.string().max(50).optional().allow(null, ''),
+      serial_number: Joi.string().max(100).optional().allow(null, '')
     })
+  ).optional(),
+
+  item_ids: Joi.array().items(Joi.string().uuid()).optional()
 });

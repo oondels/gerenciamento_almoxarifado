@@ -1,5 +1,10 @@
 export type MovimentationType = 'inbound' | 'outbound' | 'transfer' | 'adjustment' | 'loan';
 
+export interface ProductItemInput {
+  patrimonio?: string;
+  serial_number?: string;
+}
+
 export interface CreateMovimentationDTO {
   type: MovimentationType;
   product_id: string;
@@ -9,4 +14,6 @@ export interface CreateMovimentationDTO {
   appointment?: string;
   destination_type?: string;
   destination_value?: string;
+  items?: ProductItemInput[];
+  item_ids?: string[];
 }
