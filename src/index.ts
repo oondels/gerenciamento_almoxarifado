@@ -22,6 +22,12 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
+app.get("/teste", (req: Request, res: Response) => {
+  res.json({
+    message: "Leone é gay.",
+  });
+});
+
 app.use("/products", productRoutes);
 app.use("/movimentations", movimentationRoutes);
 app.use("/users", allowedUserRoutes);
